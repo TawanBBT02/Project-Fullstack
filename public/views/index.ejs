@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>Repair Management System</title>
+    <style>
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .btn-menu {
+            text-decoration: none;
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-menu:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .step-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="max-width: 1000px; text-align: center;">
+        <h1>🛠 ระบบจัดการงานซ่อม (Repair Management)</h1>
+        <p>จัดการข้อมูลตามโครงสร้างความสัมพันธ์ของระบบ</p>
+        
+        <div class="menu-grid">
+            <a href="/customers-list" class="btn-menu" style="background-color: #f97316;">
+                <span class="step-label">Step 1 (Table: Customers)</span>
+                <span>👤 ข้อมูลลูกค้า</span>
+            </a>
+
+            <a href="/devices-list" class="btn-menu" style="background-color: #fb923c;">
+                <span class="step-label">Step 2 (Table: Devices 1:M)</span>
+                <span>💻 ข้อมูลอุปกรณ์</span>
+            </a>
+
+            <a href="/technicians-list" class="btn-menu" style="background-color: #f59e0b;">
+                <span class="step-label">Step 3 (Table: Technicians)</span>
+                <span>👨‍🔧 ข้อมูลช่างเทคนิค</span>
+            </a>
+
+            <a href="/add-repair" class="btn-menu" style="background-color: #ea580c;">
+                <span class="step-label">Step 4 (Table: Repairs)</span>
+                <span>📑 เปิดใบสั่งซ่อมใหม่</span>
+            </a>
+
+            <a href="/dashboard" class="btn-menu" style="background-color: #c2410c;">
+                <span class="step-label">Overview</span>
+                <span>📋 รายการงานซ่อมทั้งหมด</span>
+            </a>
+
+            <a href="/admin/add-payment/1" class="btn-menu" style="background-color: #16a34a;">
+                <span class="step-label">Final Step (Table: Payments 1:1)</span>
+                <span>💰 บันทึกการชำระเงิน</span>
+            </a>
+        </div>
+
+        <div style="margin-top: 40px; padding: 20px; background: #fff7ed; border-radius: 8px; border: 1px solid #ffedd5;">
+            <p style="color: #9a3412; font-size: 0.9rem;">
+                <strong>ความสัมพันธ์:</strong> 
+                Customers → Devices (1:M) | Devices/Tech → Repairs (1:M) | Repairs → Payments (1:1)
+            </p>
+        </div>
+    </div>
+</body>
+</html>

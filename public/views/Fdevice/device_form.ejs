@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>เพิ่มข้อมูลอุปกรณ์</title>
+</head>
+<body>
+    <div class="container">
+        <h1>💻 เพิ่มข้อมูลอุปกรณ์ (New Device)</h1>
+        <p>ระบุรายละเอียดอุปกรณ์เพื่อเชื่อมโยงกับข้อมูลลูกค้า</p>
+        
+        <form action="/add-device" method="POST">
+            <label>เลือกลูกค้าเจ้าของอุปกรณ์</label>
+            <select name="customer_id" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px;">
+                <option value="">-- กรุณาเลือกลูกค้า --</option>
+                
+                <% if (typeof customers !== 'undefined' && customers.length > 0) { %>
+                    <% customers.forEach(customer => { %>
+                        <option value="<%= customer.customer_id %>">
+                            ID: <%= customer.customer_id %> - <%= customer.first_name %> <%= customer.last_name %>
+                        </option>
+                    <% }) %>
+                <% } else { %>
+                    <option value="" disabled>-- ไม่พบข้อมูลลูกค้าในระบบ --</option>
+                <% } %>
+            </select>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label>ประเภทอุปกรณ์</label>
+                    <input type="text" name="device_type" placeholder="เช่น Notebook, PC" required>
+                </div>
+                <div>
+                    <label>ยี่ห้อ (Brand)</label>
+                    <input type="text" name="brand" placeholder="เช่น Apple, ASUS" required>
+                </div>
+            </div>
+
+            <label>รุ่น (Model)</label>
+            <input type="text" name="model" placeholder="เช่น MacBook Pro" required>
+            
+            <label>เลขที่ Serial Number</label>
+            <input type="text" name="serial_number" placeholder="เช่น SN XXX-XXXX" required>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button type="submit" style="flex: 2; background-color: #ea580c; color: white; border: none; cursor: pointer; padding: 10px; border-radius: 5px;">💾 บันทึกข้อมูลอุปกรณ์</button>
+                <a href="/devices-list" class="btn-back" style="flex: 1; text-align: center; text-decoration: none; line-height: 40px; background-color: #64748b; color: white; border-radius: 5px;">ดูรายการทั้งหมด</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html> 

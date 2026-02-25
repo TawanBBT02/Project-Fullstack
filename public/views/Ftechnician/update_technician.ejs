@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>แก้ไขข้อมูลช่างเทคนิค</title>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 แก้ไขข้อมูลช่างเทคนิค</h1>
+        <form action="/technician/update/<%= technician.technician_id %>" method="POST">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label>ชื่อ</label>
+                    <input type="text" name="first_name" value="<%= technician.first_name %>" required>
+                </div>
+                <div>
+                    <label>นามสกุล</label>
+                    <input type="text" name="last_name" value="<%= technician.last_name %>" required>
+                </div>
+            </div>
+
+            <label>เบอร์โทรศัพท์</label>
+            <input type="tel" name="phone" value="<%= technician.phone %>" required>
+
+            <label>อีเมล</label>
+            <input type="email" name="email" value="<%= technician.email %>">
+
+            <label>วันที่เริ่มงาน</label>
+            <input type="date" name="hire_date" value="<%= technician.hire_date %>" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ddd;">
+
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button type="submit" style="flex: 2; background-color: #f59e0b; color: white; border: none; cursor: pointer; padding: 10px; border-radius: 5px;">💾 บันทึกการแก้ไข</button>
+                <a href="/technicians-list" class="btn-back" style="flex: 1; text-align: center; text-decoration: none; line-height: 40px; background-color: #64748b; color: white; border-radius: 5px;">ยกเลิก</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

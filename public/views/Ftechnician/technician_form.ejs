@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>เพิ่มข้อมูลช่างเทคนิค</title>
+</head>
+<body>
+    <div class="container">
+        <h1>👨‍🔧 เพิ่มข้อมูลช่างเทคนิค (New Technician)</h1>
+        <p>ระบุข้อมูลพนักงานเพื่อมอบหมายงานในระบบ (Technicians 1 : M Repairs)</p>
+        
+        <form action="/add-technician" method="POST">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label>ชื่อ (First Name)</label>
+                    <input type="text" name="first_name" placeholder="ชื่อช่าง" required>
+                </div>
+                <div>
+                    <label>นามสกุล (Last Name)</label>
+                    <input type="text" name="last_name" placeholder="นามสกุล" required>
+                </div>
+            </div>
+
+            <label>เบอร์โทรศัพท์ (Phone)</label>
+            <input type="tel" name="phone" placeholder="08x-xxx-xxxx" required>
+
+            <label>อีเมล (Email)</label>
+            <input type="email" name="email" placeholder="tech.example@mail.com">
+
+            <label>วันที่เริ่มงาน (Hire Date)</label>
+            <input type="date" name="hire_date" required style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ddd;">
+
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button type="submit" style="flex: 2; background-color: #ea580c;">💾 บันทึกข้อมูลช่างเทคนิค</button>
+                <a href="/" class="btn-back" style="flex: 1; text-align: center; text-decoration: none; line-height: 40px;">กลับหน้าหลัก</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

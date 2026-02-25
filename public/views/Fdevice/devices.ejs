@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>รายการอุปกรณ์</title>
+</head>
+<body>
+    <div class="container">
+        <h1>💻 รายการอุปกรณ์ทั้งหมด</h1>
+        <div style="margin-bottom: 20px; text-align: right;">
+            <a href="/add-device" class="btn-detail" style="background-color: #fb923c;">➕ เพิ่มอุปกรณ์ใหม่</a>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ประเภท</th>
+                        <th>ยี่ห้อ/รุ่น</th>
+                        <th>เจ้าของ</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% devices.forEach(device => { %>
+                    <tr>
+                        <td><%= device.device_id %></td>
+                        <td><%= device.device_type %></td>
+                        <td><%= device.brand %> - <%= device.model %></td>
+                        <td><%= device.customer ? device.customer.first_name : 'ไม่ระบุ' %></td>
+                        <td>
+                            <a href="/device/update/<%= device.device_id %>" class="status progress">แก้ไข</a>
+                            <a href="/device/delete/<%= device.device_id %>" class="status failed" onclick="return confirm('ลบข้อมูลอุปกรณ์นี้?')">ลบ</a>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top: 20px; display: flex; gap: 10px;">   
+            <a href="/" class="btn-back" style="flex: 1; text-align: center; text-decoration: none; line-height: 40px; background: #ccc; border-radius: 4px; color: black;">กลับหน้าหลัก</a>
+        </div>
+            </div>
+</body>
+</html>
