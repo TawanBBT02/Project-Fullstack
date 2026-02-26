@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>แก้ไขข้อมูลงานซ่อม #<%= repair.repair_id %></title>
+</head>
+<body>
+    <div class="container" style="max-width: 700px;">
+        <h1>📝 แก้ไขข้อมูลงานซ่อม #<%= repair.repair_id %></h1>
+        
+        <form action="/repair/edit/<%= repair.repair_id %>" method="POST" class="detail-card" style="padding: 25px;">
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="detail-row">
+                    <label><strong>📊 สถานะการซ่อม:</strong></label>
+                    <select name="status" style="width: 100%; padding: 10px; margin-top: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                        <option value="Pending" <%= repair.status === 'Pending' ? 'selected' : '' %>>รอดำเนินการ (Pending)</option>
+                        <option value="Repairing" <%= repair.status === 'Repairing' ? 'selected' : '' %>>กำลังซ่อม (Repairing)</option>
+                        <option value="Fixed" <%= repair.status === 'Fixed' ? 'selected' : '' %>>ซ่อมเสร็จแล้ว (Fixed)</option>
+                        <option value="Completed" <%= repair.status === 'Completed' ? 'selected' : '' %>>เสร็จสมบูรณ์ (Completed)</option>
+                    </select>
+                </div>
+
+                <div class="detail-row">
+                    <label><strong>🛠 ประเภทงานซ่อม:</strong></label>
+                    <input type="text" name="problem_type" value="<%= repair.problem_type %>" 
+                           style="width: 100%; padding: 10px; margin-top: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                </div>
+            </div>
+
+            <div class="detail-row" style="margin-top: 20px;">
+                <label><strong>📝 รายละเอียดอาการเสีย/หมายเหตุช่าง:</strong></label>
+                <textarea name="issue_description" rows="5" 
+                          style="width: 100%; padding: 10px; margin-top: 8px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit;"><%= repair.issue_description %></textarea>
+            </div>
+
+            <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: center;">
+                <button type="submit" style="padding: 12px 30px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    💾 บันทึกข้อมูล
+                </button>
+                <a href="/repair-detail/<%= repair.repair_id %>" 
+                   style="padding: 12px 30px; background: #64748b; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                   ยกเลิก
+                </a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

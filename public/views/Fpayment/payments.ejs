@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>รายการชำระเงิน</title>
+    <style>
+        .badge-paid { background-color: #dcfce7; color: #166534; }
+        .badge-pending { background-color: #fee2e2; color: #991b1b; }
+        /* สไตล์เพิ่มเติมสำหรับแจ้งเตือนตอนไม่มีข้อมูล */
+        .alert-empty {
+            padding: 20px;
+            background-color: #f1f5f9;
+            border-radius: 8px;
+            text-align: center;
+            color: #64748b;
+            margin-top: 20px;
+            border: 1px dashed #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="max-width: 900px;">
+        <h1>📋 รายการการชำระเงิน (Payments List)</h1>
+        
+        <% if (payments && payments.length > 0) { %>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <thead>
+                    <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                        <th style="padding: 12px; text-align: left;">รหัสชำระเงิน</th>
+                        <th style="padding: 12px; text-align: left;">รหัสงานซ่อม</th>
+                        <th style="padding: 12px; text-align: right;">ยอดชำระ</th>
+                        <th style="padding: 12px; text-align: center;">วันที่</th>
+                        <th style="padding: 12px; text-align: center;">สถานะ</th>
+                        <th style="padding: 12px; text-align: center;">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% payments.forEach(payment => { %>
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 12px;">#<%= payment.payment_id %></td>
+                        <td style="padding: 12px;">#<%= payment.repair_id %></td>
+                        <td style="padding: 12px; text-align: right; font-weight: bold; color: #ea580c;">
+                            <%= parseFloat(payment.total_cost).toLocaleString() %>
+                        </td>
+                        <td style="padding: 12px; text-align: center;"><%= payment.payment_date %></td>
+                        <td style="padding: 12px; text-align: center;">
+                            <span class="status-badge <%= payment.payment_status === 'Paid' ? 'badge-paid' : 'badge-pending' %>" 
+                                style="padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">
+                                <%= payment.payment_status %>
+                            </span>
+                        </td>
+                        <td style="padding: 12px; text-align: center;">
+                            <a href="/payment/update/<%= payment.payment_id %>" style="text-decoration: none; color: #2563eb;">⚙️ แก้ไข</a>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <div class="alert-empty">
+                <h3>📭 ยังไม่มีประวัติการชำระเงิน</h3>
+                <p>กรุณาไปที่หน้ารายละเอียดงานซ่อมเพื่อกด "บันทึกการชำระเงิน"</p>
+            </div>
+        <% } %>
+
+        <div style="margin-top: 20px;">
+            <a href="/" style="color: var(--text-gray); text-decoration: none; font-weight: 600;">⬅ กลับเมนูหลัก</a>
+        </div>
+    </div>
+</body>
+</html>

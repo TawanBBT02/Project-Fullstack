@@ -77,22 +77,36 @@
                         <strong>🛠 ประเภทงาน:</strong>
                         <p><%= repair.problem_type %></p>
                     </div>
-                    <!-- <div>
-                        <strong>💳 สถานะการเงิน:</strong>
-                        <div style="margin-top: 5px;">
-                            <span class="status <%= repair.payment_id ? 'success' : 'failed' %>" 
-                                  style=" <%= !repair.payment_id ? 'background:#64748b' : '' %>">
-                                <%= repair.payment_id ? 'ชำระเงินแล้ว' : 'รอการชำระ' %>
-                            </span>
-                        </div> -->
+                    <div style="margin-top: 20px; display: flex; gap: 10px; align-items: center;">
+                        <% if (repair.status !== 'Completed') { %>
+                            <a href="/add-payment/<%= repair.repair_id %>" 
+                            style="padding: 10px 20px; background-color: #ea580c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                                💰 ไปหน้าชำระเงิน
+                            </a>
+
+                            <a href="/repair/update/<%= repair.repair_id %>" 
+                            style="padding: 10px 20px; background-color: #f59e0b; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                                📝 แก้ไขสถานะงาน
+                            </a>
+                        <% } else { %>
+                            <span style="color: #059669; font-weight: bold;">✅ งานซ่อมนี้ชำระเงินเรียบร้อยแล้ว</span>
+                        <% } %>
                     </div>
+                   </div>
                 </div>
             </div>
         </div>
 
         <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-            <a href="/dashboard" class="btn-back" style="padding: 12px 25px; text-decoration: none; background: #64748b; color: white; border-radius: 5px;">⬅ กลับไป Dashboard</a>
-            <a href="/repair/update/<%= repair.repair_id %>" class="btn-detail" style="background:#f59e0b; padding: 12px 25px; text-decoration: none; color: white; border-radius: 5px;">📝 แก้ไขสถานะงาน</a>
+            <a href="/dashboard" 
+            style="padding: 12px 25px; text-decoration: none; background: #64748b; color: white; border-radius: 5px; font-weight: bold;">
+            ⬅ กลับไป Dashboard
+            </a>
+            
+            <a href="/repair/edit/<%= repair.repair_id %>" 
+                style="padding: 12px 25px; text-decoration: none; background: #3b82f6; color: white; border-radius: 5px; font-weight: bold;">
+                📝 แก้ไขข้อมูลงานซ่อม
+            </a>
         </div>
     </div>
 </body>
