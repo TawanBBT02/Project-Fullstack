@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แก้ไขข้อมูลช่างเทคนิค</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; padding: 20px; max-width: 500px; margin: auto; }
+        .form-container { background-color: #e6ffe6; padding: 20px; border: 1px solid #4CAF50; }
+        .form-group { margin-bottom: 15px; }
+        input { padding: 8px; width: 100%; box-sizing: border-box; margin-top: 5px; }
+        button { padding: 10px 15px; cursor: pointer; background-color: #4CAF50; color: white; border: none; }
+        .btn-cancel { background-color: #999; color: white; text-decoration: none; padding: 10px 15px; display: inline-block; margin-left: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>🔧 แก้ไขข้อมูลช่างเทคนิค (ID: <%= technician.technician_id %>)</h2>
+        
+        <form action="/update-technician/<%= technician.technician_id %>" method="POST">
+            
+            <div class="form-group">
+                <label>ชื่อ:</label>
+                <input type="text" name="first_name" value="<%= technician.first_name %>" required>
+            </div>
+            <div class="form-group">
+                <label>นามสกุล:</label>
+                <input type="text" name="last_name" value="<%= technician.last_name %>" required>
+            </div>
+            <div class="form-group">
+                <label>เบอร์โทรศัพท์:</label>
+                <input type="text" name="phone" value="<%= technician.phone %>">
+            </div>
+            <div class="form-group">
+                <label>อีเมล:</label>
+                <input type="email" name="email" value="<%= technician.email %>">
+            </div>
+            <div class="form-group">
+                <label>วันที่เริ่มงาน:</label>
+                <input type="date" name="hire_date" value="<%= technician.hire_date %>" required>
+            </div>
+            
+            <button type="submit">บันทึกการเปลี่ยนแปลง</button>
+            <a href="/technicians" class="btn-cancel">ยกเลิก</a>
+        </form>
+    </div>
+
+</body>
+</html>

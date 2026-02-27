@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายละเอียดการซ่อม</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; padding: 20px; max-width: 900px; margin: auto; }
+        .header-box { background-color: #e3f2fd; padding: 15px; border-left: 5px solid #2196F3; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .form-container { background-color: #f9f9f9; padding: 15px; border: 1px solid #ddd; margin-bottom: 20px; }
+        .form-group { margin-bottom: 10px; }
+        input, select, textarea { padding: 6px; width: 100%; box-sizing: border-box; margin-top: 4px; }
+        button { padding: 8px 15px; cursor: pointer; background-color: #4CAF50; color: white; border: none; margin-top: 10px; }
+        .btn-back { background-color: #555; color: white; text-decoration: none; padding: 8px 15px; display: inline-block; }
+        /* เพิ่มคลาสสำหรับสีของผลลัพธ์การซ่อม */
+        .result-success { font-weight: bold; color: #4CAF50; } /* สีเขียว */
+        .result-failed { font-weight: bold; color: #f44336; } /* สีแดง */
+        /* เพิ่มสีสำหรับสถานะการเงิน */
+        .pay-paid { color: #4CAF50; font-weight: bold; }
+        .pay-pending { color: #ff9800; font-weight: bold; }
+        .pay-none { color: #9e9e9e; font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <div class="header-box">
+        <h2 style="margin-top: 0;">🛠️ บันทึกผลการซ่อม (บิล ID: <%= repair.repair_id %>)</h2>
+        <p><strong>ลูกค้า:</strong> <%= repair.first_name %> <%= repair.last_name %></p>
+        <p><strong>อุปกรณ์:</strong> <%= repair.brand %> <%= repair.model %></p>
+        <p><strong>อาการเสียเบื้องต้น:</strong> <%= repair.problem_type %></p>
+        <p><strong>สถานะงานซ่อม:</strong> <%= repair.status %></p>
+        
+        <p><strong>สถานะการชำระเงิน:</strong> 
+            <% if (repair.payment_status === 'Paid') { %>
+                <span class="pay-paid">จ่ายแล้ว (Paid)</span>
+            <% } else if (repair.payment_status === 'Pending') { %>
+                <span class="pay-pending">รอการชำระ (Pending)</span>
+            <% } else { %>
+                <span class="pay-none">ยังไม่มีการเปิดบิลเรียกเก็บเงิน</span>
+            <% } %>
+        </p>
+    </div>
+
+    <div class="form-container">
+        <h3>เพิ่มบันทึกการทำงาน / ผลการซ่อม</h3>
+        <form action="/add-repair-detail/<%= repair.repair_id %>" method="POST">
+            <div class="form-group">
+                <label>รายละเอียดการซ่อม (สิ่งที่ช่างทำ):</label>
+                <textarea name="details" rows="3" required placeholder="เช่น แกะเครื่องทำความสะอาด, เปลี่ยนซิลิโคน..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>ผลการวินิจฉัย (สาเหตุที่แท้จริง):</label>
+                <input type="text" name="diagnostic_result" required placeholder="เช่น พัดลมระบายความร้อนเสีย">
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>วันที่ดำเนินการเสร็จ:</label>
+                    <input type="date" name="completed_date" required>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>ผลสรุป (ของรายการนี้):</label>
+                    <select name="repair_result" required>
+                        <option value="Success">✅ สำเร็จ (Success)</option>
+                        <option value="Failed">❌ ไม่สำเร็จ (Failed)</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit">บันทึกลงประวัติ</button>
+            <a href="/repairs" class="btn-back">⬅️ กลับไปหน้างานซ่อม</a>
+        </form>
+    </div>
+
+    <h3>ประวัติการทำงานของบิลนี้</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>วันที่</th>
+                <th>ผลการวินิจฉัย</th>
+                <th>รายละเอียดสิ่งที่ทำ</th>
+                <th>ผลลัพธ์</th>
+                <th>จัดการ</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (details.length === 0) { %>
+                <tr><td colspan="5" style="text-align:center;">ยังไม่มีบันทึกการทำงาน</td></tr>
+            <% } else { %>
+                <% details.forEach(d => { %>
+                    <tr>
+                        <td><%= d.completed_date %></td>
+                        <td><%= d.diagnostic_result %></td>
+                        <td><%= d.details %></td>
+                        <td class="<%= d.repair_result === 'Success' ? 'result-success' : 'result-failed' %>">
+                            <%= d.repair_result %>
+                        </td>
+                        <td>
+                            <form action="/delete-repair-detail/<%= repair.repair_id %>/<%= d.detail_id %>" method="POST" onsubmit="return confirm('ลบประวัตินี้?');">
+                                <button type="submit" style="background-color: #f44336; padding: 4px 8px; margin-top: 0;">ลบ</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }); %>
+            <% } %>
+        </tbody>
+    </table>
+
+</body>
+</html>

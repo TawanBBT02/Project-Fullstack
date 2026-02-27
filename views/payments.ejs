@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการการชำระเงิน (Payments)</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; padding: 20px; max-width: 900px; margin: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #e6f7ff; }
+        .form-container { background-color: #f0f8ff; padding: 15px; border: 1px solid #b3e0ff; margin-bottom: 20px; }
+        .form-group { margin-bottom: 10px; }
+        input, select { padding: 6px; width: 220px; margin-right: 10px; }
+        button { padding: 6px 12px; cursor: pointer; background-color: #2196F3; color: white; border: none; }
+        button:hover { background-color: #0b7dda; }
+        .nav-menu { margin-bottom: 20px; padding: 10px; background-color: #333; color: white; }
+        .nav-menu a { color: white; text-decoration: none; margin-right: 15px; font-weight: bold; }
+        
+        /* สไตล์สถานะการจ่ายเงิน */
+        .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; display: inline-block; }
+        .payment-paid { background-color: #4CAF50; } /* สีเขียว */
+        .payment-pending { background-color: #ff9800; } /* สีส้ม */
+    </style>
+</head>
+<body>
+
+    <div style="margin-bottom: 20px; padding: 10px; background-color: #333;">
+        <a href="/" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">👤 จัดการลูกค้า</a>
+        <a href="/devices" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">💻 จัดการอุปกรณ์</a>
+        <a href="/technicians" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">🔧 จัดการช่างเทคนิค</a>
+        <a href="/repairs" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">🛠️ จัดการงานซ่อม</a>
+        <a href="/payments" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">💰 จัดการการชำระเงิน</a>
+        <a href="/report-revenue" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">📈 รายงานรายได้</a>
+    </div>
+
+    <h2>ระบบร้านซ่อม - ข้อมูลการชำระเงิน</h2>
+
+    <div class="form-container">
+        <h3>เปิดบิลรับเงิน</h3>
+        <form action="/add-payment" method="POST">
+            <div class="form-group">
+                <label>เลือกบิลงานซ่อม:</label>
+                <select name="repair_id" required style="width: 400px;">
+                    <option value="">-- เลือกรายการงานซ่อม --</option>
+                    <% repairs.forEach(r => { %>
+                        <option value="<%= r.repair_id %>">
+                            บิล #<%= r.repair_id %> - <%= r.problem_type %> (ของ: <%= r.first_name %>, <%= r.brand %>)
+                        </option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>ยอดเงินรวม (บาท):</label>
+                <input type="number" step="0.01" name="total_cost" required placeholder="เช่น 1500">
+                
+                <label>วันที่ชำระ:</label>
+                <input type="date" name="payment_date" required>
+                
+                <label>สถานะ:</label>
+                <select name="payment_status" required style="width: 150px;">
+                    <option value="Paid">จ่ายแล้ว (Paid)</option>
+                    <option value="Pending">ค้างชำระ (Pending)</option>
+                </select>
+            </div>
+            <button type="submit">บันทึกข้อมูลการชำระเงิน</button>
+        </form>
+    </div>
+
+    <h3>ประวัติการรับเงินทั้งหมด</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ID การจ่าย</th>
+                <th>บิลซ่อม (Repair ID)</th>
+                <th>ลูกค้า / อุปกรณ์</th>
+                <th>ยอดเงิน (บาท)</th>
+                <th>วันที่ชำระ</th>
+                <th>สถานะ</th>
+                <th>จัดการ</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (payments.length === 0) { %>
+                <tr><td colspan="7" style="text-align:center;">ยังไม่มีข้อมูลการชำระเงิน</td></tr>
+            <% } else { %>
+                <% payments.forEach(p => { %>
+                    <tr>
+                        <td><%= p.payment_id %></td>
+                        <td>บิล #<%= p.repair_id %> (<%= p.problem_type %>)</td>
+                        <td><%= p.first_name %> (<%= p.brand %>)</td>
+                        <td style="font-weight: bold;"><%= p.total_cost %></td>
+                        <td><%= p.payment_date %></td>
+                        <td>
+                            <% let pClass = p.payment_status === 'Paid' ? 'payment-paid' : 'payment-pending'; %>
+                            <span class="status-badge <%= pClass %>"><%= p.payment_status %></span>
+                        </td>
+                        <td>
+                            <a href="/edit-payment/<%= p.payment_id %>" style="background-color: #FFC107; color: black; text-decoration: none; padding: 4px 8px; border-radius: 3px; font-size: 13px;">แก้ไข</a>
+                            <form action="/delete-payment/<%= p.payment_id %>" method="POST" onsubmit="return confirm('ลบข้อมูลการชำระเงินนี้?');" style="display:inline;">
+                                <button type="submit" style="padding: 4px 8px; font-size: 13px; border-radius: 3px; background-color: #f44336; color: white; border: none; cursor: pointer;">ลบ</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }); %>
+            <% } %>
+        </tbody>
+    </table>
+
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการอุปกรณ์ (Devices)</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; padding: 20px; max-width: 900px; margin: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #e6f2ff; }
+        .form-group { margin-bottom: 10px; }
+        input, select { padding: 5px; width: 200px; }
+        button { padding: 6px 12px; cursor: pointer; background-color: #008CBA; color: white; border: none; }
+        button:hover { background-color: #007399; }
+        .form-container { background-color: #f2f9ff; padding: 15px; border: 1px solid #cce6ff; margin-bottom: 20px; }
+        .nav-menu { margin-bottom: 20px; padding: 10px; background-color: #333; color: white; }
+        .nav-menu a { color: white; text-decoration: none; margin-right: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div style="margin-bottom: 20px; padding: 10px; background-color: #333;">
+        <a href="/" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">👤 จัดการลูกค้า</a>
+        <a href="/devices" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">💻 จัดการอุปกรณ์</a>
+        <a href="/technicians" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">🔧 จัดการช่างเทคนิค</a>
+        <a href="/repairs" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">🛠️ จัดการงานซ่อม</a>
+        <a href="/payments" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">💰 จัดการการชำระเงิน</a>
+        <a href="/report-revenue" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">📈 รายงานรายได้</a>
+    </div>
+
+    <h2>ระบบร้านซ่อม - จัดการอุปกรณ์</h2>
+
+    <div class="form-container">
+        <h3>เพิ่มอุปกรณ์ใหม่</h3>
+        <form action="/add-device" method="POST">
+            <div class="form-group">
+                <label>เจ้าของอุปกรณ์ (ลูกค้า):</label>
+                <select name="customer_id" required style="width: 415px;">
+                    <option value="">-- กรุณาเลือกลูกค้า --</option>
+                    <% customers.forEach(function(c) { %>
+                        <option value="<%= c.customer_id %>"><%= c.first_name %> <%= c.last_name %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="text" name="device_type" placeholder="ประเภท (เช่น Notebook, PC)" required>
+                <input type="text" name="brand" placeholder="ยี่ห้อ (เช่น Dell, Asus)" required>
+            </div>
+            <div class="form-group">
+                <input type="text" name="model" placeholder="รุ่น (Model)">
+                <input type="text" name="serial_number" placeholder="Serial Number (S/N)">
+            </div>
+            <button type="submit">บันทึกอุปกรณ์</button>
+        </form>
+    </div>
+
+    <h3>รายชื่ออุปกรณ์ทั้งหมด</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>เจ้าของ (ลูกค้า)</th>
+                <th>ประเภท</th>
+                <th>ยี่ห้อ / รุ่น</th>
+                <th>S/N</th>
+                <th>จัดการ</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (devices.length === 0) { %>
+                <tr><td colspan="6" style="text-align:center;">ยังไม่มีข้อมูลอุปกรณ์</td></tr>
+            <% } else { %>
+                <% devices.forEach(function(device) { %>
+                    <tr>
+                        <td><%= device.device_id %></td>
+                        <td><%= device.first_name %> <%= device.last_name %></td>
+                        <td><%= device.device_type %></td>
+                        <td><%= device.brand %> <%= device.model %></td>
+                        <td><%= device.serial_number || '-' %></td>
+                        <td>
+                            <a href="/edit-device/<%= device.device_id %>" style="background-color: #FFC107; color: black; text-decoration: none; padding: 5px 10px; margin-right: 5px; border-radius: 3px; font-size: 14px;">แก้ไข</a>
+                            
+                            <form action="/delete-device/<%= device.device_id %>" method="POST" onsubmit="return confirm('ลบอุปกรณ์ชิ้นนี้?');" style="display:inline;">
+                                <button type="submit" style="background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;">ลบ</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }); %>
+            <% } %>
+        </tbody>
+    </table>
+
+</body>
+</html>

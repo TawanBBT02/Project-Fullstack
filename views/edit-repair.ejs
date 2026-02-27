@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แก้ไขข้อมูลงานซ่อม</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+        .form-container { background-color: #fff2f2; padding: 20px; border: 1px solid #ffcccc; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { padding: 8px; width: 100%; box-sizing: border-box; }
+        button { padding: 10px 15px; cursor: pointer; background-color: #f44336; color: white; border: none; margin-top: 10px;}
+        .btn-cancel { background-color: #999; color: white; text-decoration: none; padding: 10px 15px; display: inline-block; margin-left: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>🛠️ แก้ไขข้อมูลงานซ่อม (บิล ID: <%= repair.repair_id %>)</h2>
+        
+        <form action="/update-repair/<%= repair.repair_id %>" method="POST">
+            
+            <div class="form-group">
+                <label>ลูกค้า:</label>
+                <select name="customer_id" required>
+                    <% customers.forEach(c => { %><option value="<%= c.customer_id %>" <%= c.customer_id === repair.customer_id ? 'selected' : '' %>><%= c.first_name %> <%= c.last_name %></option><% }); %>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>อุปกรณ์:</label>
+                <select name="device_id" required>
+                    <% devices.forEach(d => { %><option value="<%= d.device_id %>" <%= d.device_id === repair.device_id ? 'selected' : '' %>><%= d.brand %> <%= d.model %></option><% }); %>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>ช่างผู้รับผิดชอบ:</label>
+                <select name="technician_id" required>
+                    <% technicians.forEach(t => { %><option value="<%= t.technician_id %>" <%= t.technician_id === repair.technician_id ? 'selected' : '' %>>ช่าง <%= t.first_name %></option><% }); %>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>อาการเสีย:</label>
+                <input type="text" name="problem_type" value="<%= repair.problem_type %>" required>
+            </div>
+            <div class="form-group">
+                <label>วันที่รับเครื่อง:</label>
+                <input type="date" name="receive_date" value="<%= repair.receive_date %>" required>
+            </div>
+            <div class="form-group">
+                <label>สถานะงานซ่อม:</label>
+                <select name="status" required>
+                    <option value="Pending" <%= repair.status === 'Pending' ? 'selected' : '' %>>รอตรวจสอบ (Pending)</option>
+                    <option value="In Progress" <%= repair.status === 'In Progress' ? 'selected' : '' %>>กำลังซ่อม (In Progress)</option>
+                    <option value="Completed" <%= repair.status === 'Completed' ? 'selected' : '' %>>ซ่อมเสร็จสิ้น (Completed)</option>
+                    <option value="Canceled" <%= repair.status === 'Canceled' ? 'selected' : '' %>>ยกเลิก (Canceled)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>รายละเอียดเพิ่มเติม:</label>
+                <input type="text" name="issue_description" value="<%= repair.issue_description %>">
+            </div>
+            
+            <button type="submit">บันทึกการเปลี่ยนแปลง</button>
+            <a href="/repairs" class="btn-cancel">ยกเลิก</a>
+        </form>
+    </div>
+
+</body>
+</html>

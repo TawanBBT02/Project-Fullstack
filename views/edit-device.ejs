@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แก้ไขข้อมูลอุปกรณ์</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; padding: 20px; max-width: 500px; margin: auto; }
+        .form-container { background-color: #e6f9ff; padding: 20px; border: 1px solid #0099cc; }
+        .form-group { margin-bottom: 15px; }
+        input, select { padding: 8px; width: 100%; box-sizing: border-box; margin-top: 5px; }
+        button { padding: 10px 15px; cursor: pointer; background-color: #008CBA; color: white; border: none; }
+        .btn-cancel { background-color: #999; color: white; text-decoration: none; padding: 10px 15px; display: inline-block; margin-left: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>💻 แก้ไขข้อมูลอุปกรณ์ (ID: <%= device.device_id %>)</h2>
+        
+        <form action="/update-device/<%= device.device_id %>" method="POST">
+            
+            <div class="form-group">
+                <label>เจ้าของอุปกรณ์ (ลูกค้า):</label>
+                <select name="customer_id" required>
+                    <% customers.forEach(function(c) { %>
+                        <option value="<%= c.customer_id %>" <%= c.customer_id === device.customer_id ? 'selected' : '' %>>
+                            <%= c.first_name %> <%= c.last_name %>
+                        </option>
+                    <% }); %>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>ประเภท (เช่น Notebook, PC):</label>
+                <input type="text" name="device_type" value="<%= device.device_type %>" required>
+            </div>
+            <div class="form-group">
+                <label>ยี่ห้อ (Brand):</label>
+                <input type="text" name="brand" value="<%= device.brand %>" required>
+            </div>
+            <div class="form-group">
+                <label>รุ่น (Model):</label>
+                <input type="text" name="model" value="<%= device.model %>">
+            </div>
+            <div class="form-group">
+                <label>Serial Number (S/N):</label>
+                <input type="text" name="serial_number" value="<%= device.serial_number %>">
+            </div>
+            
+            <button type="submit">บันทึกการเปลี่ยนแปลง</button>
+            <a href="/devices" class="btn-cancel">ยกเลิก</a>
+        </form>
+    </div>
+
+</body>
+</html>

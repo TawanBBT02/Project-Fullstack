@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แก้ไขข้อมูลการชำระเงิน</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; padding: 20px; max-width: 500px; margin: auto; }
+        .form-container { background-color: #f0f8ff; padding: 20px; border: 1px solid #b3e0ff; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { padding: 8px; width: 100%; box-sizing: border-box; }
+        button { padding: 10px 15px; cursor: pointer; background-color: #2196F3; color: white; border: none; margin-top: 10px;}
+        .btn-cancel { background-color: #999; color: white; text-decoration: none; padding: 10px 15px; display: inline-block; margin-left: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>💰 แก้ไขการชำระเงิน (ID: <%= payment.payment_id %>)</h2>
+        
+        <form action="/update-payment/<%= payment.payment_id %>" method="POST">
+            
+            <div class="form-group">
+                <label>บิลงานซ่อม:</label>
+                <select name="repair_id" required>
+                    <% repairs.forEach(r => { %>
+                        <option value="<%= r.repair_id %>" <%= r.repair_id === payment.repair_id ? 'selected' : '' %>>
+                            บิล #<%= r.repair_id %> - <%= r.problem_type %> (<%= r.first_name %>)
+                        </option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>ยอดเงินรวม (บาท):</label>
+                <input type="number" step="0.01" name="total_cost" value="<%= payment.total_cost %>" required>
+            </div>
+            <div class="form-group">
+                <label>วันที่ชำระ:</label>
+                <input type="date" name="payment_date" value="<%= payment.payment_date %>" required>
+            </div>
+            <div class="form-group">
+                <label>สถานะ:</label>
+                <select name="payment_status" required>
+                    <option value="Paid" <%= payment.payment_status === 'Paid' ? 'selected' : '' %>>จ่ายแล้ว (Paid)</option>
+                    <option value="Pending" <%= payment.payment_status === 'Pending' ? 'selected' : '' %>>ค้างชำระ (Pending)</option>
+                </select>
+            </div>
+            
+            <button type="submit">บันทึกการเปลี่ยนแปลง</button>
+            <a href="/payments" class="btn-cancel">ยกเลิก</a>
+        </form>
+    </div>
+
+</body>
+</html>

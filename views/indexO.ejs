@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบร้านซ่อมคอมพิวเตอร์</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .form-group { margin-bottom: 10px; }
+        input { padding: 5px; width: 200px; }
+        button { padding: 6px 12px; cursor: pointer; background-color: #4CAF50; color: white; border: none; }
+        button:hover { background-color: #45a049; }
+        .form-container { background-color: #f9f9f9; padding: 15px; border: 1px solid #ddd; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <div style="margin-bottom: 20px; padding: 10px; background-color: #333;">
+        <a href="/" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">👤 จัดการลูกค้า</a>
+        <a href="/devices" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">💻 จัดการอุปกรณ์</a>
+        <a href="/technicians" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">🔧 จัดการช่างเทคนิค</a>
+        <a href="/repairs" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">🛠️ จัดการงานซ่อม</a>
+        <a href="/payments" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">💰 จัดการการชำระเงิน</a>
+        <a href="/report-repairs" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">� รายงานงานซ่อม</a>
+        <a href="/report-revenue" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">📈 รายงานรายได้</a>
+    </div>
+    <h2>ระบบร้านซ่อมอุปกรณ์คอมพิวเตอร์</h2>
+
+    <div class="form-container">
+        <h3>เพิ่มลูกค้าใหม่</h3>
+        <form action="/add-customer" method="POST">
+            <div class="form-group">
+                <input type="text" name="first_name" placeholder="ชื่อ" required>
+                <input type="text" name="last_name" placeholder="นามสกุล" required>
+            </div>
+            <div class="form-group">
+                <input type="text" name="phone" placeholder="เบอร์โทรศัพท์">
+                <input type="email" name="email" placeholder="อีเมล">
+            </div>
+            <div class="form-group">
+                <input type="text" name="address" placeholder="ที่อยู่" style="width: 415px;">
+            </div>
+            <button type="submit">บันทึกข้อมูล</button>
+        </form>
+    </div>
+    
+
+    <h3>รายชื่อลูกค้าทั้งหมด</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>ชื่อ-นามสกุล</th>
+                <th>เบอร์โทรศัพท์</th>
+                <th>อีเมล</th>
+                <th>ที่อยู่</th>
+                <th>จัดการ</th> </tr>
+        </thead>
+        <tbody>
+            <% if (customers.length === 0) { %>
+                <tr><td colspan="6" style="text-align:center;">ยังไม่มีข้อมูลลูกค้า</td></tr>
+            <% } else { %>
+                <% customers.forEach(function(customer) { %>
+                    <tr>
+                        <td><%= customer.customer_id %></td>
+                        <td><%= customer.first_name %> <%= customer.last_name %></td>
+                        <td><%= customer.phone || '-' %></td>
+                        <td><%= customer.email || '-' %></td>
+                        <td><%= customer.address || '-' %></td>
+                        <td>
+                            <a href="/edit-customer/<%= customer.customer_id %>" style="background-color: #FFC107; color: black; text-decoration: none; padding: 5px 10px; margin-right: 5px; border-radius: 3px; font-size: 14px;">แก้ไข</a>
+                            
+                            <form action="/delete-customer/<%= customer.customer_id %>" method="POST" onsubmit="return confirm('คุณแน่ใจหรือไม่ที่จะลบลูกค้ารายนี้?');" style="display:inline;">
+                                <button type="submit" style="background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;">ลบ</button>
+                            </form>
+                        </td>
+                        
+                    </tr>
+                <% }); %>
+            <% } %>
+        </tbody>
+    </table>
+
+</body>
+</html>

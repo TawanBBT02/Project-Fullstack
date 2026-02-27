@@ -1,0 +1,174 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<style>
+    .timeline { position: relative; padding-left: 30px; list-style: none; }
+    .timeline::before {
+        content: ''; position: absolute; top: 0; left: 15px;
+        height: 100%; width: 2px; background: #e9ecef;
+    }
+    .timeline-item { position: relative; margin-bottom: 1.5rem; }
+    .timeline-icon {
+        position: absolute; left: -30px; top: 0;
+        width: 32px; height: 32px; border-radius: 50%;
+        background: white; border: 2px solid #e9ecef;
+        display: flex; align-items: center; justify-content: center;
+        z-index: 1;
+    }
+    /* สไตล์หลักสำหรับ Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem; /* px-3 และ fs-6 โดยประมาณ */
+            font-size: 1rem;
+            font-weight: 500;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 50rem; /* rounded-pill */
+            color: #fff; /* สีตัวอักษรเริ่มต้น (ขาว) */
+            font-family: sans-serif;
+        }
+
+        /* เพิ่มลูกเล่นเวลา Hover (ตัวเลือกเสริม) */
+        .status-badge:hover {
+            opacity: 0.9;
+            filter: brightness(95%);
+        }
+</style>
+
+<div class="d-flex justify-content-between align-items-center pb-2 mb-4 border-bottom print-hide">
+    <h2 class="h3 text-dark"><i class="bi bi-file-earmark-text text-primary me-2"></i>รายละเอียดใบแจ้งซ่อม</h2>
+    <div>
+        <a href="/repairs" class="btn btn-outline-secondary me-2 rounded-pill px-3"><i class="bi bi-arrow-left"></i> กลับหน้ารายการ</a>
+        <button onclick="window.print()" class="btn btn-primary rounded-pill px-4"><i class="bi bi-printer"></i> พิมพ์เอกสาร</button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card shadow-sm mb-4 border-top border-warning border-4" style="border-radius: 12px;">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="text-muted small mb-1">เลขที่ใบแจ้งซ่อม</h5>
+                    <h3 class="text-dark fw-bold mb-0">REP-<%= String(repair.repair_id).padStart(3, '0') %></h3>
+                </div>
+                <div class="text-end">
+                    <h5 class="text-muted small mb-1">สถานะปัจจุบัน</h5>
+                    <% 
+                        let badgeColor = '#ff6b00'; // Default In Progress
+                        if(repair.status === 'Pending') badgeColor = '#6c757d';
+                        if(repair.status === 'Completed') badgeColor = '#198754';
+                    %>
+                    <span class="badge fs-6 rounded-pill px-3" style="background-color: <%= badgeColor %>;"><%= repair.status %></span>
+                </div> 
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4 border-0" style="border-radius: 12px;">
+            <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold">ข้อมูลลูกค้าและอุปกรณ์</h6></div>
+            <div class="card-body pt-0">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted small">ชื่อลูกค้า:</div>
+                    <div class="col-sm-8 fw-bold text-dark"><%= repair.first_name %> <%= repair.last_name %></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted small">เบอร์ติดต่อ:</div>
+                    <div class="col-sm-8 text-primary"><%= repair.phone %></div>
+                </div>
+                <hr class="opacity-25">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted small">ประเภท:</div>
+                    <div class="col-sm-8"><span class="badge bg-light text-dark border fw-normal"><%= repair.device_type %></span></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted small">ยี่ห้อ / รุ่น:</div>
+                    <div class="col-sm-8 fw-bold"><%= repair.brand %> <%= repair.model %></div>
+                </div>
+                <div class="row mb-0">
+                    <div class="col-sm-4 text-muted small">Serial Number:</div>
+                    <div class="col-sm-8 font-monospace text-muted small"><%= repair.serial_number || 'ไม่ระบุ' %></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4 border-0" style="border-radius: 12px;">
+            <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>อาการเสียที่แจ้ง</h6></div>
+            <div class="card-body bg-light mx-3 mb-3" style="border-radius: 8px;">
+                <p class="mb-0"><%= repair.problem_type %></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm mb-4 border-0" style="border-radius: 12px;">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-0">
+                <h6 class="mb-0 fw-bold">ประวัติการดำเนินงาน</h6>
+                <small class="text-muted"><i class="bi bi-person-gear"></i> ช่าง<%= repair.tech_first %></small>
+            </div>
+            <div class="card-body pb-0">
+                <ul class="timeline mt-2">
+                    <li class="timeline-item">
+                        <div class="timeline-icon text-primary border-primary">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <div class="ps-3">
+                            <h6 class="fw-bold mb-1">รับเครื่องเข้าระบบ</h6>
+                            <p class="text-muted small mb-1">ร้านได้รับอุปกรณ์และออกใบแจ้งซ่อมเรียบร้อย</p>
+                            <span class="badge bg-light text-dark border"><i class="bi bi-clock me-1"></i><%= repair.receive_date %></span>
+                        </div>
+                    </li>
+
+                    <li class="timeline-item">
+                        <% if(repair.status === 'In Progress' || repair.status === 'Completed') { %>
+                            <div class="timeline-icon text-warning border-warning">
+                                <i class="bi bi-tools"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6 class="fw-bold mb-1">กำลังดำเนินการซ่อม</h6>
+                                <p class="text-muted small mb-0">ช่างเทคนิคกำลังตรวจสอบและแก้ไขปัญหา</p>
+                            </div>
+                        <% } else { %>
+                            <div class="timeline-icon text-muted">
+                                <i class="bi bi-clock"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6 class="text-muted mb-1">รอการตรวจสอบ</h6>
+                                <p class="text-muted small mb-0">รอช่างรับงานเพื่อดำเนินการ</p>
+                            </div>
+                        <% } %>
+                    </li>
+
+                    <li class="timeline-item">
+                        <% if(repair.status === 'Completed') { %>
+                            <div class="timeline-icon text-success border-success">
+                                <i class="bi bi-check2-all"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6 class="fw-bold mb-1 text-success">ซ่อมเสร็จสิ้น / รอรับเครื่อง</h6>
+                                <p class="text-muted small mb-0">ตรวจสอบอุปกรณ์เรียบร้อย ลูกค้าสามารถมารับได้</p>
+                            </div>
+                        <% } else { %>
+                            <div class="timeline-icon text-muted">
+                                <i class="bi bi-check2-circle"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6 class="text-muted mb-1">เสร็จสิ้น</h6>
+                                <p class="text-muted small mb-0">ยังไม่ถึงขั้นตอนนี้</p>
+                            </div>
+                        <% } %>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style type="text/css" media="print">
+    .sidebar, .print-hide { display: none !important; }
+    main { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    .card { border: 1px solid #ddd !important; box-shadow: none !important; }
+    .timeline::before { background: #ddd !important; }
+</style>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,70 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
+    <h2 class="h4 fw-bold text-dark">
+        <i class="bi bi-pencil-square text-warning me-2"></i>แก้ไขข้อมูลงานซ่อม (REP-<%= String(repair.repair_id).padStart(3, '0') %>)
+    </h2>
+    <a href="/repairs" class="btn btn-outline-secondary rounded-pill px-3">
+        <i class="bi bi-arrow-left"></i> ย้อนกลับ
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-9">
+        <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+            <div class="card-body p-4">
+                <form action="/update-repair/<%= repair.repair_id %>" method="POST">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">อุปกรณ์ / ลูกค้า</label>
+                            <input type="text" class="form-control bg-light" value="<%= repair.brand %> <%= repair.model %> - (ลูกค้า: <%= repair.first_name %>)" readonly>
+                            <input type="hidden" name="device_id" value="<%= repair.device_id %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="technician_id" class="form-label fw-bold">เปลี่ยนช่างผู้ดูแล</label>
+                            <select class="form-select shadow-none border-warning" id="technician_id" name="technician_id" required>
+                                <% technicians.forEach(function(tech) { %>
+                                    <option value="<%= tech.technician_id %>" <%= tech.technician_id === repair.technician_id ? 'selected' : '' %>>
+                                        ช่าง<%= tech.first_name %> <%= tech.last_name %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="receive_date" class="form-label fw-bold">วันที่รับเครื่อง</label>
+                            <input type="date" class="form-control shadow-none" id="receive_date" name="receive_date" value="<%= repair.receive_date %>" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="status" class="form-label fw-bold">อัปเดตสถานะงาน *</label>
+                            <select class="form-select shadow-none border-primary fw-bold" id="status" name="status" required>
+                                <option value="Pending" <%= repair.status === 'Pending' ? 'selected' : '' %>>รอดำเนินการ (Pending)</option>
+                                <option value="In Progress" <%= repair.status === 'In Progress' ? 'selected' : '' %>>กำลังซ่อม (In Progress)</option>
+                                <option value="Completed" <%= repair.status === 'Completed' ? 'selected' : '' %>>ซ่อมเสร็จสิ้น (Completed)</option>
+                                <option value="Canceled" <%= repair.status === 'Canceled' ? 'selected' : '' %>>ยกเลิกการซ่อม (Canceled)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="problem_type" class="form-label fw-bold">รายละเอียดอาการเสีย / บันทึกเพิ่มเติม</label>
+                        <textarea class="form-control shadow-none" id="problem_type" name="problem_type" rows="4" required><%= repair.problem_type %></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                        <a href="/repairs" class="btn btn-light rounded-pill px-4 me-md-2">ยกเลิก</a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm">
+                            <i class="bi bi-save me-1"></i> บันทึกการอัปเดต
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

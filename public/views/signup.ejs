@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สมัครสมาชิก | ComRepair</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --main-orange: #ff6b00;
+            --bg-light: #fdfaf7;
+        }
+        body { 
+            background-color: var(--bg-light); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            padding: 20px; 
+            font-family: 'Prompt', sans-serif;
+        }
+        .signup-card { 
+            background: white; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+            width: 100%; 
+            max-width: 500px; 
+            padding: 40px; 
+        }
+        .form-control:focus { 
+            border-color: var(--main-orange); 
+            box-shadow: 0 0 0 0.25rem rgba(255, 107, 0, 0.25); 
+        }
+        .btn-primary {
+            background-color: var(--main-orange);
+            border-color: var(--main-orange);
+        }
+        .btn-primary:hover {
+            background-color: #e66000;
+            border-color: #e66000;
+        }
+    </style>
+</head>
+<body>
+
+<div class="signup-card">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-dark"><i class="bi bi-person-plus" style="color: var(--main-orange);"></i> สร้างบัญชีใหม่</h2>
+        <p class="text-muted">สมัครสมาชิกเพื่อติดตามสถานะงานซ่อมของคุณ</p>
+    </div>
+    
+    <form action="/signup" method="POST">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted small fw-bold">ชื่อ *</label>
+                <input type="text" class="form-control shadow-none" name="first_name" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label text-muted small fw-bold">นามสกุล *</label>
+                <input type="text" class="form-control shadow-none" name="last_name" required>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label text-muted small fw-bold">เบอร์โทรศัพท์ *</label>
+            <input type="text" class="form-control shadow-none" name="phone" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label text-muted small fw-bold">อีเมล *</label>
+            <input type="email" class="form-control shadow-none" name="email" required>
+        </div>
+        <div class="mb-4">
+            <label class="form-label text-muted small fw-bold">รหัสผ่านสำหรับเข้าใช้งาน *</label>
+            <input type="password" class="form-control shadow-none" name="password" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-100 py-2 mb-3 fw-bold rounded-pill shadow-sm">ลงทะเบียน</button>
+        <p class="text-center text-muted mb-0 small">มีบัญชีอยู่แล้ว? <a href="/login" class="text-decoration-none fw-bold" style="color: var(--main-orange);">เข้าสู่ระบบ</a></p>
+    </form>
+</div>
+
+</body>
+</html>

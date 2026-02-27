@@ -1,0 +1,69 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
+    <h2 class="h4 fw-bold text-dark"><i class="bi bi-pc-display-horizontal text-primary me-2"></i>เพิ่มอุปกรณ์ใหม่</h2>
+    <a href="/devices" class="btn btn-outline-secondary rounded-pill px-3">
+        <i class="bi bi-arrow-left"></i> ย้อนกลับ
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+            <div class="card-body p-4">
+                <form action="/add_device" method="POST">
+                    
+                    <div class="mb-3">
+                        <label for="customer_id" class="form-label fw-bold">ลูกค้าเจ้าของเครื่อง *</label>
+                        <select class="form-select shadow-none" id="customer_id" name="customer_id" required>
+                            <option value="">-- เลือกลูกค้าเจ้าของอุปกรณ์ --</option>
+                            <% customers.forEach(function(cust) { %>
+                                <option value="<%= cust.customer_id %>">
+                                    <%= cust.first_name %> <%= cust.last_name %> (<%= cust.phone %>)
+                                </option>
+                            <% }); %>
+                        </select>
+                        <div class="form-text">หากไม่พบชื่อลูกค้า โปรดเพิ่มข้อมูลลูกค้าก่อน</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="device_type" class="form-label fw-bold">ประเภทอุปกรณ์ *</label>
+                            <select class="form-select shadow-none" id="device_type" name="device_type" required>
+                                <option value="">-- เลือกประเภท --</option>
+                                <option value="Notebook">Notebook</option>
+                                <option value="PC Desktop">PC Desktop</option>
+                                <option value="MacBook">MacBook</option>
+                                <option value="All-in-One">All-in-One</option>
+                                <option value="Other">อื่นๆ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="brand" class="form-label fw-bold">ยี่ห้อ *</label>
+                            <input type="text" class="form-control shadow-none" id="brand" name="brand" placeholder="เช่น Asus, HP, Dell" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="model" class="form-label fw-bold">รุ่น (Model)</label>
+                        <input type="text" class="form-control shadow-none" id="model" name="model" placeholder="เช่น TUF Gaming F15">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="serial_number" class="form-label fw-bold">Serial Number (S/N)</label>
+                        <input type="text" class="form-control shadow-none" id="serial_number" name="serial_number" placeholder="ระบุหมายเลขประจำเครื่อง">
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm">
+                            <i class="bi bi-save me-1"></i> บันทึกอุปกรณ์
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

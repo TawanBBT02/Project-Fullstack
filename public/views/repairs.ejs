@@ -1,0 +1,70 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
+    <h2 class="h4 fw-bold text-dark"><i class="bi bi-wrench-adjustable text-primary me-2"></i>รายการแจ้งซ่อมทั้งหมด</h2>
+    <a href="/add_repair" class="btn btn-primary rounded-pill px-4 shadow-sm">
+        <i class="bi bi-plus-lg me-1"></i> เปิดใบแจ้งซ่อมใหม่
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm" style="border-radius: 12px;">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light text-muted">
+                    <tr>
+                        <th class="ps-4">รหัสงาน</th>
+                        <th>วันที่รับเครื่อง</th>
+                        <th>ลูกค้า</th>
+                        <th>อุปกรณ์</th>
+                        <th>สถานะ</th>
+                        <th class="text-end pe-4">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (repairs.length === 0) { %>
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">ยังไม่มีรายการแจ้งซ่อมในขณะนี้</td>
+                        </tr>
+                    <% } else { %>
+                        <% repairs.forEach(function(r) { %>
+                            <tr>
+                                <td class="ps-4 fw-bold text-muted">REP-<%= String(r.repair_id).padStart(3, '0') %></td>
+                                <td><%= r.receive_date %></td>
+                                <td>
+                                    <div class="fw-bold"><%= r.first_name %> <%= r.last_name %></div>
+                                    <small class="text-muted"><%= r.phone %></small>
+                                </td>
+                                <td>
+                                    <div class="badge bg-light text-dark border-0 fw-normal p-0"><%= r.brand %> <%= r.model %></div>
+                                </td>
+                                <td>
+                                    <% if(r.status === 'Pending') { %>
+                                        <span class="badge bg-secondary rounded-pill px-3">รอดำเนินการ</span>
+                                    <% } else if(r.status === 'In Progress') { %>
+                                        <span class="badge rounded-pill px-3" style="background-color: #ff6b00;">กำลังซ่อม</span>
+                                    <% } else if(r.status === 'Completed') { %>
+                                        <span class="badge bg-success rounded-pill px-3">ซ่อมเสร็จสิ้น</span>
+                                    <% } else { %>
+                                        <span class="badge bg-dark rounded-pill px-3"><%= r.status %></span>
+                                    <% } %>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a href="/repair-details/<%= r.repair_id %>" class="btn btn-sm btn-info text-white rounded-pill px-3 shadow-sm me-1">
+                                        <i class="bi bi-search"></i> รายละเอียด
+                                    </a>
+                                    <a href="/edit-repair/<%= r.repair_id %>" class="btn btn-sm btn-outline-warning rounded-circle shadow-sm">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

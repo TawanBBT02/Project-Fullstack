@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>รายงานสถานะงานซ่อม</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; padding: 20px; max-width: 1000px; margin: auto; background-color: #f4f7f6; }
+        .nav-menu { margin-bottom: 20px; padding: 10px; background-color: #333; color: white; border-radius: 5px; }
+        .nav-menu a { color: white; text-decoration: none; margin-right: 15px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #e2e8f0; }
+        .filter-box { background-color: white; padding: 15px; border-radius: 5px; border: 1px solid #ddd; margin-bottom: 20px; }
+        input, select, button { padding: 6px; margin-right: 10px; }
+        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; border-radius: 3px; }
+        /* สไตล์ Dashboard Card */
+        .card-container { display: flex; gap: 15px; margin-bottom: 20px; }
+        .card { background: white; padding: 15px; border-radius: 5px; border: 1px solid #ddd; flex: 1; text-align: center; border-top: 4px solid #2196F3; }
+        .card h3 { margin: 0; color: #555; font-size: 16px; }
+        .card p { font-size: 28px; font-weight: bold; color: #2196F3; margin: 10px 0 0 0; }
+        .status-pending { color: #ff9800; font-weight: bold; }
+        .status-inprogress { color: #2196F3; font-weight: bold; }
+        .status-completed { color: #4CAF50; font-weight: bold; }
+        .status-canceled { color: #9e9e9e; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="nav-menu">
+        <a href="/">👤 ลูกค้า</a> <a href="/devices">💻 อุปกรณ์</a> <a href="/technicians">🔧 ช่าง</a> 
+        <a href="/repairs">🛠️ แจ้งซ่อม</a> <a href="/payments">💰 ชำระเงิน</a>
+        <span style="color: #aaa;">|</span>
+        <a href="/report-repairs" style="color: #ffeb3b;">📊 รายงานงานซ่อม</a>
+        <a href="/report-revenue">📈 รายงานรายได้</a>
+    </div>
+
+    <h2>📊 รายงานสถานะงานซ่อมและภาระงานช่าง</h2>
+
+    <div class="card-container">
+        <% summary.forEach(s => { %>
+            <div class="card">
+                <h3>ช่าง <%= s.first_name %> <%= s.last_name %></h3>
+                <p><%= s.pending_count %> งานค้าง</p>
+            </div>
+        <% }); %>
+    </div>
+
+    <div class="filter-box">
+        <form action="/report-repairs" method="GET">
+            <label>กรองตามช่าง:</label>
+            <select name="tech_id">
+                <option value="">-- ช่างทั้งหมด --</option>
+                <% techs.forEach(t => { %>
+                    <option value="<%= t.technician_id %>" <%= tech_filter == t.technician_id ? 'selected' : '' %>>ช่าง <%= t.first_name %></option>
+                <% }); %>
+            </select>
+            
+            <label>สถานะ:</label>
+            <select name="status">
+                <option value="">-- ทุกสถานะ --</option>
+                <option value="Pending" <%= status_filter == 'Pending' ? 'selected' : '' %>>รอตรวจสอบ (Pending)</option>
+                <option value="In Progress" <%= status_filter == 'In Progress' ? 'selected' : '' %>>กำลังซ่อม (In Progress)</option>
+                <option value="Completed" <%= status_filter == 'Completed' ? 'selected' : '' %>>ซ่อมเสร็จ (Completed)</option>
+                <option value="Canceled" <%= status_filter == 'Canceled' ? 'selected' : '' %>>ยกเลิก (Canceled)</option>
+            </select>
+            
+            <label>วันที่รับเครื่อง:</label>
+            <input type="date" name="receive_date" value="<%= date_filter %>">
+            
+            <button type="submit">🔍 ค้นหา</button>
+            <a href="/report-repairs" style="font-size: 14px; text-decoration: none; color: #f44336;">ล้างตัวกรอง</a>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>วันที่รับเครื่อง</th>
+                <th>ลูกค้า</th>
+                <th>แบรนด์/รุ่นอุปกรณ์</th>
+                <th>ช่างที่รับผิดชอบ</th>
+                <th>สถานะปัจจุบัน</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (repairs.length === 0) { %>
+                <tr><td colspan="6" style="text-align:center;">ไม่พบข้อมูลตามเงื่อนไขที่ค้นหา</td></tr>
+            <% } else { %>
+                <% repairs.forEach(r => { %>
+                    <tr>
+                        <td><%= r.repair_id %></td>
+                        <td><%= r.receive_date %></td>
+                        <td><%= r.c_fname %></td>
+                        <td><%= r.brand %> <%= r.model %></td>
+                        <td>ช่าง <%= r.t_fname %></td>
+                        <td class="<%= r.status === 'Completed' ? 'status-completed' : (r.status === 'In Progress' ? 'status-inprogress' : (r.status === 'Canceled' ? 'status-canceled' : 'status-pending')) %>">
+                            <%= r.status %>
+                        </td>
+                    </tr>
+                <% }); %>
+            <% } %>
+        </tbody>
+    </table>
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="d-flex justify-content-between align-items-center pb-2 mb-4 border-bottom print-hide">
+    <h2 class="h4 fw-bold text-dark"><i class="bi bi-pencil-square text-warning me-2"></i>จัดการข้อมูลการชำระเงิน</h2>
+    <div>
+        <a href="/payments" class="btn btn-outline-secondary rounded-pill px-3 me-2"><i class="bi bi-arrow-left"></i> ย้อนกลับ</a>
+        <button onclick="window.print()" class="btn btn-light rounded-pill px-3"><i class="bi bi-printer"></i> พิมพ์ใบเสร็จ</button>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+            <div class="card-body p-5">
+                <div class="row mb-4">
+                    <div class="col-sm-6">
+                        <h2 class="text-primary fw-bold mb-0">ComRepair</h2>
+                        <p class="text-muted small">ร้านซ่อมคอมพิวเตอร์ครบวงจร<br>123 ถ.สุขุมวิท กรุงเทพฯ 10110<br>โทร. 02-123-4567</p>
+                    </div>
+                    <div class="col-sm-6 text-end">
+                        <h3 class="fw-bold">ใบแจ้งหนี้ / ใบเสร็จ</h3>
+                        <p class="mb-0 text-muted">เลขที่บิล: <strong>INV-<%= String(payment.payment_id).padStart(5, '0') %></strong></p>
+                        <p class="mb-0 text-muted">อ้างอิงงานซ่อม: <strong>REP-<%= String(payment.repair_id).padStart(3, '0') %></strong></p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <form action="/update-payment/<%= payment.payment_id %>" method="POST">
+                    <div class="row mb-4 mt-4">
+                        <div class="col-sm-6">
+                            <h6 class="fw-bold text-muted mb-2">ลูกค้า / ผู้ชำระเงิน:</h6>
+                            <h5 class="fw-bold mb-1"><%= payment.first_name %> <%= payment.last_name %></h5>
+                        </div>
+                        <div class="col-sm-6 text-end">
+                            <label class="fw-bold text-muted d-block mb-2">สถานะการชำระเงิน:</label>
+                            <select class="form-select d-inline-block w-auto shadow-none" name="payment_status">
+                                <option value="Paid" <%= payment.payment_status === 'Paid' ? 'selected' : '' %>>ชำระแล้ว (Paid)</option>
+                                <option value="Pending" <%= payment.payment_status === 'Pending' ? 'selected' : '' %>>ค้างชำระ (Pending)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>รายการ (Description)</th>
+                                    <th class="text-end" style="width: 30%;">ยอดเงินสุทธิ (บาท)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">ค่าบริการซ่อมอุปกรณ์</div>
+                                        <small class="text-muted">รหัสงานซ่อม: <%= payment.repair_id %></small>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white">฿</span>
+                                            <input type="number" step="0.01" class="form-control text-end fw-bold shadow-none" 
+                                                   name="total_cost" value="<%= payment.total_cost %>" required>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td class="text-end fw-bold py-3">ยอดรวมสุทธิ (Total Amount):</td>
+                                    <td class="text-end fw-bold fs-5 text-primary py-3">
+                                        ฿<%= payment.total_cost.toLocaleString(undefined, {minimumFractionDigits: 2}) %>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="mb-4 col-md-4 ms-auto">
+                        <label class="fw-bold text-muted mb-2">วันที่ทำรายการ:</label>
+                        <input type="date" class="form-control shadow-none" name="payment_date" value="<%= payment.payment_date %>" required>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-4 print-hide">
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm">
+                            <i class="bi bi-save me-1"></i> บันทึกการแก้ไข
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-5 text-muted small">
+                    <p>ขอบคุณที่ใช้บริการ หากมีข้อสงสัยเกี่ยวกับใบเสร็จรับเงิน โปรดติดต่อทางร้านภายใน 7 วัน</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style type="text/css" media="print">
+    .sidebar, .print-hide, .btn-group { display: none !important; }
+    main { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    .card { border: none !important; box-shadow: none !important; }
+    input, select { border: none !important; appearance: none; -webkit-appearance: none; background: transparent !important; }
+</style>
+
+<%- include('partials/footer') %>

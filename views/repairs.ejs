@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการงานซ่อม (Repairs)</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; padding: 20px; max-width: 1000px; margin: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #ffe6e6; }
+        .form-group { margin-bottom: 10px; }
+        input, select { padding: 5px; width: 220px; margin-right: 10px; }
+        button { padding: 6px 12px; cursor: pointer; background-color: #f44336; color: white; border: none; }
+        button:hover { background-color: #d32f2f; }
+        .form-container { background-color: #fff2f2; padding: 15px; border: 1px solid #ffcccc; margin-bottom: 20px; }
+        .nav-menu { margin-bottom: 20px; padding: 10px; background-color: #333; color: white; }
+        .nav-menu a { color: white; text-decoration: none; margin-right: 15px; font-weight: bold; }
+        .status-badge { padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: bold; color: white; }
+        .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; display: inline-block; }
+        
+        /* เพิ่ม Internal Style แยกตามสถานะตรงนี้ครับ */
+        .status-completed { background-color: #4CAF50; } /* สีเขียว */
+        .status-inprogress { background-color: #2196F3; } /* สีฟ้า */
+        .status-canceled { background-color: #9e9e9e; }  /* สีเทา */
+        .status-pending { background-color: #ff9800; }   /* สีส้ม */
+    </style>
+</head>
+<body>
+
+    <div style="margin-bottom: 20px; padding: 10px; background-color: #333;">
+        <a href="/" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">👤 จัดการลูกค้า</a>
+        <a href="/devices" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">💻 จัดการอุปกรณ์</a>
+        <a href="/technicians" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">🔧 จัดการช่างเทคนิค</a>
+        <a href="/repairs" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">🛠️ จัดการงานซ่อม</a>
+        <a href="/payments" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">💰 จัดการการชำระเงิน</a>
+        <a href="/report-revenue" style="color: white; text-decoration: none; margin-right: 15px; font-weight: bold;">📈 รายงานรายได้</a>
+    </div>
+
+    <h2>ระบบร้านซ่อม - จัดการงานซ่อม</h2>
+
+    <div class="form-container">
+        <h3>เปิดบิลงานซ่อมใหม่</h3>
+        <form action="/add-repair" method="POST">
+            <div class="form-group">
+                <label>เลือกอุปกรณ์ที่นำมาซ่อม:</label>
+                <select name="device_id" required style="width: 350px;">
+                    <option value="">-- เลือกอุปกรณ์ (ชื่อลูกค้า) --</option>
+                    <% devices.forEach(d => { %>
+                        <option value="<%= d.device_id %>">
+                            <%= d.brand %> <%= d.model %> (ของ: <%= d.first_name %> <%= d.last_name %>)
+                        </option>
+                    <% }); %>
+                </select>
+                
+                <label style="margin-left: 10px;">ช่างผู้รับผิดชอบ:</label>
+                <select name="technician_id" required>
+                    <option value="">-- เลือกช่าง --</option>
+                    <% technicians.forEach(t => { %><option value="<%= t.technician_id %>">ช่าง <%= t.first_name %></option><% }); %>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <input type="text" name="problem_type" placeholder="อาการเสีย (เช่น เปิดไม่ติด)" required style="width: 250px;">
+                <input type="date" name="receive_date" required title="วันที่รับเครื่อง" style="width: 150px;">
+                <select name="status" required style="width: 150px;">
+                    <option value="Pending">รอตรวจสอบ</option>
+                    <option value="In Progress">กำลังซ่อม</option>
+                    <option value="Completed">ซ่อมเสร็จ</option>
+                    <option value="Canceled">ยกเลิก</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="text" name="issue_description" placeholder="รายละเอียดเพิ่มเติม..." style="width: 100%; box-sizing: border-box;">
+            </div>
+            <button type="submit">บันทึกงานซ่อม</button>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>วันที่รับเครื่อง</th>
+                <th>ลูกค้า</th>
+                <th>อุปกรณ์</th>
+                <th>อาการเสีย</th>
+                <th>ช่างรับผิดชอบ</th>
+                <th>สถานะ</th>
+                <th>จัดการ</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (repairs.length === 0) { %>
+                <tr><td colspan="8" style="text-align:center;">ยังไม่มีข้อมูลงานซ่อม</td></tr>
+            <% } else { %>
+                <% repairs.forEach(r => { %>
+                    <tr>
+                        <td><%= r.repair_id %></td>
+                        <td><%= r.receive_date %></td>
+                        <td><%= r.c_fname %> <%= r.c_lname %></td>
+                        <td><%= r.brand %> <%= r.model %></td>
+                        <td><%= r.problem_type %></td>
+                        <td><%= r.t_fname %></td>
+                        <td>
+                            <% 
+                                // สร้างตัวแปรเก็บชื่อ Class แทนการเก็บรหัสสี
+                                let statusClass = 'status-pending'; // ค่าเริ่มต้น
+                                if (r.status === 'Completed') statusClass = 'status-completed';
+                                else if (r.status === 'In Progress') statusClass = 'status-inprogress';
+                                else if (r.status === 'Canceled') statusClass = 'status-canceled';
+                            %>
+                            <span class="status-badge <%= statusClass %>"><%= r.status %></span>
+                        </td>
+                        <td>
+                            <a href="/repair-details/<%= r.repair_id %>" style="background-color: #2196F3; color: white; text-decoration: none; padding: 4px 8px; border-radius: 3px; font-size: 13px; margin-right: 3px;">🔍 รายละเอียด</a>
+                            
+                            <a href="/edit-repair/<%= r.repair_id %>" style="background-color: #FFC107; color: black; text-decoration: none; padding: 4px 8px; border-radius: 3px; font-size: 13px;">แก้ไข</a>
+                            <form action="/delete-repair/<%= r.repair_id %>" method="POST" onsubmit="return confirm('ลบงานซ่อมนี้?');" style="display:inline;">
+                                <button type="submit" style="padding: 4px 8px; font-size: 13px; border-radius: 3px; background-color: #f44336; color: white; border: none; cursor: pointer;">ลบ</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }); %>
+            <% } %>
+        </tbody>
+    </table>
+
+</body>
+</html>

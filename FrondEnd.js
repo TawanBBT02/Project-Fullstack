@@ -48,6 +48,23 @@ app.post("/create-customer", async (req, res) => {
     } catch (error) { res.status(500).send("Error creating customer"); }
 });
 
+app.get('/update-customer/:id', async (req, res) => {
+    try {
+        const response = await axios.get(`${base_url}/customers/${req.params.id}`);
+        res.render('Fcustomer/update_customer', { customers: response.data });
+    } catch (error) {
+        res.status(500).send("Error fetching customer");
+    }
+});
+
+app.post('/update-customer/:id', async (req, res) => {
+    try {
+        await axios.put(`${base_url}/customers/${req.params.id}`, req.body);
+        res.redirect('/customers-list');
+    } catch (error) {
+        res.status(500).send("Error updating customer");
+    }
+});
 /* ================================== 3. DEVICE ====================== */
 
 app.get('/devices-list', async (req, res) => {
@@ -71,6 +88,35 @@ app.post("/add-device", async (req, res) => {
     } catch (error) { res.status(500).send("Error adding device"); }
 });
 
+// 1. หน้าสำหรับดึงข้อมูลอุปกรณ์เดิมมาแสดงในฟอร์มแก้ไข
+app.get('/device/update/:id', async (req, res) => {
+    try {
+        // ดึงข้อมูลอุปกรณ์ที่ต้องการแก้ไข
+        const deviceRes = await axios.get(`${base_url}/devices/${req.params.id}`);
+        // ดึงรายชื่อลูกค้าทั้งหมดมาแสดงใน Dropdown เผื่อเลือกเจ้าของใหม่
+        const customersRes = await axios.get(`${base_url}/customers`);
+        
+        res.render('Fdevice/update_device', { 
+            device: deviceRes.data, 
+            customers: customersRes.data 
+        });
+    } catch (error) {
+        console.error("Error fetching device for update:", error.message);
+        res.status(500).send("Error fetching device data");
+    }
+});
+
+// 2. รับข้อมูลจากฟอร์มเพื่อส่งไป Update ที่ Backend (ใช้ POST ตามโครงสร้างเดิม)
+app.post('/device/update/:id', async (req, res) => {
+    try {
+        await axios.put(`${base_url}/devices/${req.params.id}`, req.body);
+        res.redirect('/devices-list');
+    } catch (error) {
+        console.error("Error updating device:", error.message);
+        res.status(500).send("Error updating device");
+    }
+});
+
 /* ================================== 4. TECHNICIAN ====================== */
 
 app.get('/technicians-list', async (req, res) => {
@@ -87,6 +133,24 @@ app.post('/add-technician', async (req, res) => {
         await axios.post(`${base_url}/technicians`, req.body);
         res.redirect('/technicians-list');
     } catch (error) { res.status(500).send("Error adding technician"); }
+});
+
+app.get('/technician/update/:id', async (req, res) => {
+    try {
+        const response = await axios.get(`${base_url}/technicians/${req.params.id}`);
+        res.render('Ftechnician/update_technician', { technician: response.data });
+    } catch (error) {
+        res.status(500).send("Error fetching technician");
+    }
+});
+
+app.post('/technician/update/:id', async (req, res) => {
+    try {
+        await axios.put(`${base_url}/technicians/${req.params.id}`, req.body);
+        res.redirect('/technicians-list');
+    } catch (error) {
+        res.status(500).send("Error updating technician");
+    }
 });
 
 /* ================================== 5. REPAIR ====================== */

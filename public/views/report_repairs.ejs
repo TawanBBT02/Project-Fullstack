@@ -1,0 +1,109 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
+    <h2 class="h4 fw-bold text-dark"><i class="bi bi-bar-chart-fill text-primary me-2"></i>รายงานวิเคราะห์งานซ่อม</h2>
+</div>
+
+<div class="card border-0 shadow-sm mb-4" style="border-radius: 12px;">
+    <div class="card-body">
+        <form action="/report_repairs" method="GET" class="row g-3 align-items-end">
+            <div class="col-md-8">
+                <label class="form-label fw-bold small">กรองตามช่างเทคนิคที่รับผิดชอบ</label>
+                <select name="tech_id" class="form-select shadow-none border-primary-subtle">
+                    <option value="">-- แสดงช่างทุกคน (รวมทั้งร้าน) --</option>
+                    <% technicians.forEach(function(tech) { %>
+                        <option value="<%= tech.technician_id %>" <%= selectedTech == tech.technician_id ? 'selected' : '' %>>
+                            ช่าง<%= tech.first_name %> <%= tech.last_name %>
+                        </option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100 rounded-pill shadow-sm">
+                    <i class="bi bi-funnel-fill me-1"></i> กรองข้อมูล
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px;">
+            <div class="card-header bg-white border-0 py-3">
+                <h6 class="mb-0 fw-bold">สถิติงานซ่อม</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="repairChart" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px;">
+            <div class="card-header bg-white border-0 py-3">
+                <h6 class="mb-0 fw-bold">สัดส่วนอุปกรณ์</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="devicePieChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-2" style="border-radius: 12px;">
+    <div class="card-header bg-white py-3 border-0">
+        <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-list-task me-2"></i>รายการงานซ่อมที่รับผิดชอบ</h6>
+    </div>
+    <div class="card-body pt-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light text-muted small">
+                    <tr>
+                        <th class="ps-3">เลขที่งาน</th>
+                        <th>วันที่รับเครื่อง</th>
+                        <th>ลูกค้า</th>
+                        <th>อุปกรณ์</th>
+                        <th>สถานะ</th>
+                        <th class="text-end pe-3">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (repairList && repairList.length > 0) { %>
+                        <% repairList.forEach(function(r) { %>
+                            <tr>
+                                <td class="ps-3 fw-bold text-dark">REP-<%= String(r.repair_id).padStart(3, '0') %></td>
+                                <td><%= r.receive_date %></td>
+                                <td><%= r.first_name %> <%= r.last_name %></td>
+                                <td><small class="text-muted"><%= r.brand %> <%= r.model %></small></td>
+                                <td>
+                                    <% 
+                                        let statusClass = 'bg-secondary';
+                                        if(r.status === 'In Progress') statusClass = 'bg-warning text-dark';
+                                        if(r.status === 'Completed') statusClass = 'bg-success';
+                                    %>
+                                    <span class="badge <%= statusClass %> rounded-pill px-3"><%= r.status %></span>
+                                </td>
+                                <td class="text-end pe-3">
+                                    <a href="/repair-details/<%= r.repair_id %>" class="btn btn-sm btn-light border rounded-pill">
+                                        <i class="bi bi-search"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                                ไม่พบข้อมูลงานซ่อมในเงื่อนไขที่เลือก
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<%- include('partials/footer') %>

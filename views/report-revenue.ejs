@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>รายงานสรุปยอดรายได้</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; padding: 20px; max-width: 900px; margin: auto; background-color: #f4f7f6; }
+        .nav-menu { margin-bottom: 20px; padding: 10px; background-color: #333; color: white; border-radius: 5px; }
+        .nav-menu a { color: white; text-decoration: none; margin-right: 15px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #e8f5e9; }
+        .filter-box { background-color: white; padding: 15px; border-radius: 5px; border: 1px solid #ddd; margin-bottom: 20px; }
+        input, select, button { padding: 6px; margin-right: 10px; }
+        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; border-radius: 3px; }
+        .money { color: #2e7d32; font-weight: bold; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <div class="nav-menu">
+        <a href="/">👤 ลูกค้า</a> <a href="/devices">💻 อุปกรณ์</a> <a href="/technicians">🔧 ช่าง</a> 
+        <a href="/repairs">🛠️ แจ้งซ่อม</a> <a href="/payments">💰 ชำระเงิน</a>
+        <span style="color: #aaa;">|</span>
+        <a href="/report-repairs">📊 รายงานงานซ่อม</a>
+        <a href="/report-revenue" style="color: #ffeb3b;">📈 รายงานรายได้</a>
+    </div>
+
+    <h2>📈 รายงานสรุปยอดรายได้ (จัดอันดับตามอุปกรณ์)</h2>
+
+    <div class="filter-box">
+        <form action="/report-revenue" method="GET">
+            <label>ประเภทอุปกรณ์:</label>
+            <select name="device_type">
+                <option value="">-- ทุกประเภท --</option>
+                <% types.forEach(t => { %>
+                    <option value="<%= t.device_type %>" <%= type_filter == t.device_type ? 'selected' : '' %>><%= t.device_type %></option>
+                <% }); %>
+            </select>
+            
+            <label>สถานะการจ่าย:</label>
+            <select name="payment_status">
+                <option value="">-- ทั้งหมด --</option>
+                <option value="Paid" <%= status_filter == 'Paid' ? 'selected' : '' %>>จ่ายแล้ว (Paid)</option>
+                <option value="Pending" <%= status_filter == 'Pending' ? 'selected' : '' %>>ค้างชำระ (Pending)</option>
+            </select>
+            
+            <button type="submit">🔍 ค้นหา</button>
+            <a href="/report-revenue" style="font-size: 14px; text-decoration: none; color: #f44336;">ล้างตัวกรอง</a>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 50px; text-align: center;">อันดับ</th>
+                <th>ประเภทอุปกรณ์</th>
+                <th>สถานะเงิน</th>
+                <th style="text-align: center;">จำนวนงาน (บิล)</th>
+                <th style="text-align: right;">ยอดเงินรวม (บาท)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% 
+                let totalSum = 0;
+                if (report.length === 0) { 
+            %>
+                <tr><td colspan="5" style="text-align:center;">ไม่พบข้อมูลรายได้</td></tr>
+            <% } else { %>
+                <% report.forEach((row, index) => { 
+                    totalSum += row.total_revenue || 0;
+                %>
+                    <tr>
+                        <td style="text-align: center; font-weight: bold;"><%= index + 1 %></td>
+                        <td><%= row.device_type || 'ไม่ระบุ' %></td>
+                        <td><%= row.payment_status %></td>
+                        <td style="text-align: center;"><%= row.total_jobs %></td>
+                        <td style="text-align: right;" class="money"><%= (row.total_revenue || 0).toLocaleString() %></td>
+                    </tr>
+                <% }); %>
+                <tr style="background-color: #f1f8e9;">
+                    <td colspan="4" style="text-align: right; font-weight: bold;">รวมรายได้ทั้งหมด (ตามตัวกรอง):</td>
+                    <td style="text-align: right; font-size: 18px; color: #1b5e20; font-weight: bold;">
+                        <%= totalSum.toLocaleString() %> ฿
+                    </td>
+                </tr>
+            <% } %>
+        </tbody>
+        <hr style="margin: 40px 0; border: 0; border-top: 1px solid #ccc;">
+
+    <div style="display: flex; gap: 20px;">
+        <div style="flex: 1;">
+            <h3>📅 สรุปรายได้รายวัน (ล่าสุด)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>วันที่</th>
+                        <th>จำนวนบิล</th>
+                        <th style="text-align: right;">ยอดเงิน</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% dailyReport.forEach(d => { %>
+                        <tr>
+                            <td><%= d.payment_date %></td>
+                            <td><%= d.job_count %></td>
+                            <td style="text-align: right;" class="money"><%= d.daily_total.toLocaleString() %> ฿</td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="flex: 1;">
+            <h3>🗓️ สรุปรายได้รายเดือน</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>เดือน</th>
+                        <th>จำนวนบิล</th>
+                        <th style="text-align: right;">ยอดเงิน</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% monthlyReport.forEach(m => { %>
+                        <tr>
+                            <td><%= m.month %></td>
+                            <td><%= m.job_count %></td>
+                            <td style="text-align: right;" class="money"><%= m.monthly_total.toLocaleString() %> ฿</td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </table>
+    
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
+    <h2 class="h4 fw-bold text-dark"><i class="bi bi-file-earmark-plus-fill me-2 text-primary"></i>เปิดใบแจ้งซ่อมใหม่</h2>
+    <a href="/repairs" class="btn btn-outline-secondary rounded-pill px-3">
+        <i class="bi bi-arrow-left"></i> ย้อนกลับ
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-9">
+        <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+            <div class="card-body p-4">
+                <form action="/add_repair" method="POST">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="device_id" class="form-label fw-bold">เลือกอุปกรณ์ (และชื่อลูกค้า) *</label>
+                            <select class="form-select shadow-none" id="device_id" name="device_id" required>
+                                <option value="">-- ค้นหาอุปกรณ์/ลูกค้า --</option>
+                                <% devices.forEach(function(dev) { %>
+                                    <option value="<%= dev.device_id %>">
+                                        <%= dev.brand %> <%= dev.model %> - (เจ้าของ: <%= dev.first_name %> <%= dev.last_name %>)
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="technician_id" class="form-label fw-bold">มอบหมายช่างผู้ดูแล *</label>
+                            <select class="form-select shadow-none" id="technician_id" name="technician_id" required>
+                                <option value="">-- เลือกช่างเทคนิค --</option>
+                                <% technicians.forEach(function(tech) { %>
+                                    <option value="<%= tech.technician_id %>">
+                                        ช่าง<%= tech.first_name %> <%= tech.last_name %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="receive_date" class="form-label fw-bold">วันที่รับเครื่อง *</label>
+                            <input type="date" class="form-control shadow-none" id="receive_date" name="receive_date" required value="<%= new Date().toISOString().split('T')[0] %>">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="status" class="form-label fw-bold">สถานะเริ่มต้น *</label>
+                            <select class="form-select shadow-none" id="status" name="status" required>
+                                <option value="Pending" selected>รอดำเนินการ (Pending)</option>
+                                <option value="In Progress">กำลังซ่อม (In Progress)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="problem_type" class="form-label fw-bold">อาการเสียที่แจ้ง / ปัญหาที่พบ *</label>
+                        <textarea class="form-control shadow-none" id="problem_type" name="problem_type" rows="4" placeholder="ระบุอาการเสียอย่างละเอียด เช่น เปิดไม่ติด, จอแตก, ลำโพงไม่มีเสียง..." required></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                        <button type="reset" class="btn btn-light rounded-pill px-4 me-md-2">ล้างข้อมูล</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm">
+                            <i class="bi bi-check-circle me-1"></i> บันทึกใบแจ้งซ่อม
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

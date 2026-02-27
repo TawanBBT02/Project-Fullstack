@@ -1,83 +1,73 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/style.css">
-    <title>Repair Management System</title>
-    <style>
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-        .btn-menu {
-            text-decoration: none;
-            color: white;
-            padding: 25px;
-            border-radius: 10px;
-            font-weight: bold;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-menu:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .step-label {
-            font-size: 0.8rem;
-            opacity: 0.8;
-            margin-bottom: 5px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container" style="max-width: 1000px; text-align: center;">
-        <h1>🛠 ระบบจัดการงานซ่อม (Repair Management)</h1>
-        <p>จัดการข้อมูลตามโครงสร้างความสัมพันธ์ของระบบ</p>
-        
-        <div class="menu-grid">
-            <a href="/customers-list" class="btn-menu" style="background-color: #f97316;">
-                <span class="step-label">Step 1 (Table: Customers)</span>
-                <span>👤 ข้อมูลลูกค้า</span>
-            </a>
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
 
-            <a href="/devices-list" class="btn-menu" style="background-color: #fb923c;">
-                <span class="step-label">Step 2 (Table: Devices 1:M)</span>
-                <span>💻 ข้อมูลอุปกรณ์</span>
-            </a>
+<div class="d-flex justify-content-between align-items-center pb-2 mb-4 border-bottom">
+    <h2 class="h3 text-dark">ยินดีต้อนรับ, คุณ <%= customerName %></h2>
+</div>
 
-            <a href="/technicians-list" class="btn-menu" style="background-color: #f59e0b;">
-                <span class="step-label">Step 3 (Table: Technicians)</span>
-                <span>👨‍🔧 ข้อมูลช่างเทคนิค</span>
-            </a>
-
-            <a href="/add-repair" class="btn-menu" style="background-color: #ea580c;">
-                <span class="step-label">Step 4 (Table: Repairs)</span>
-                <span>📑 เปิดใบสั่งซ่อมใหม่</span>
-            </a>
-
-            <a href="/dashboard" class="btn-menu" style="background-color: #c2410c;">
-                <span class="step-label">Overview</span>
-                <span>📋 รายการงานซ่อมทั้งหมด</span>
-            </a>
-
-            <a href="/payments-list" class="btn-menu" style="background-color: #16a34a;">
-                <span class="step-label">Final Step (Table: Payments 1:1)</span>
-                <span>💰 บันทึกการชำระเงิน</span>
-            </a>
-        </div>
-
-        <div style="margin-top: 40px; padding: 20px; background: #fff7ed; border-radius: 8px; border: 1px solid #ffedd5;">
-            <p style="color: #9a3412; font-size: 0.9rem;">
-                <strong>ความสัมพันธ์:</strong> 
-                Customers → Devices (1:M) | Devices/Tech → Repairs (1:M) | Repairs → Payments (1:1)
-            </p>
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm text-white" style="background: linear-gradient(45deg, #ff6b00, #ff9e00); border-radius: 12px;">
+            <div class="card-body p-4">
+                <h6 class="card-title text-white-50"><i class="bi bi-tools"></i> อุปกรณ์ที่กำลังซ่อม</h6>
+                <h2 class="card-text fw-bold"><%= activeRepairs %> <small class="fs-6 fw-normal">รายการ</small></h2>
+            </div>
         </div>
     </div>
-</body>
-</html>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm text-white" style="background-color: #1a1c2d; border-radius: 12px;">
+            <div class="card-body p-4">
+                <h6 class="card-title text-white-50"><i class="bi bi-wallet2"></i> รอชำระเงิน / รอรับเครื่อง</h6>
+                <h2 class="card-text fw-bold"><%= pendingPayments %> <small class="fs-6 fw-normal">รายการ</small></h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4" style="border-radius: 12px;">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center bg-white border-0">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-search text-primary me-2"></i>ติดตามสถานะงานซ่อมของคุณ</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light text-muted">
+                    <tr>
+                        <th class="ps-4">รหัสงาน</th>
+                        <th>วันที่ส่งซ่อม</th>
+                        <th>อุปกรณ์</th>
+                        <th>ช่างผู้ดูแล</th>
+                        <th>สถานะ</th>
+                        <th class="text-end pe-4">รายละเอียด</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% myRepairs.forEach(function(repair) { %>
+                        <tr>
+                            <td class="ps-4 fw-medium text-muted">REP-<%= String(repair.id).padStart(3, '0') %></td>
+                            <td><%= repair.date %></td>
+                            <td><%= repair.device %></td>
+                            <td>ช่าง<%= repair.tech %></td>
+                            <td>
+                                <% if(repair.status === 'In Progress') { %>
+                                    <span class="badge rounded-pill px-3" style="background-color: #ff6b00;">กำลังซ่อม</span>
+                                <% } else if(repair.status === 'Completed') { %>
+                                    <span class="badge bg-success rounded-pill px-3">เสร็จสิ้น</span>
+                                <% } else { %>
+                                    <span class="badge bg-secondary rounded-pill px-3"><%= repair.status %></span>
+                                <% } %>
+                            </td>
+                            <td class="text-end pe-4">
+                                <a href="/repair-details/<%= repair.id %>" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    <i class="bi bi-file-text"></i> ดูใบแจ้งซ่อม
+                                </a>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

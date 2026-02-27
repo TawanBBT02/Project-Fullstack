@@ -1,0 +1,105 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="border-bottom pb-2 mb-4 d-flex justify-content-between align-items-center">
+    <h2 class="h4 fw-bold text-dark"><i class="bi bi-graph-up-arrow text-success me-2"></i>รายงานสรุปรายได้</h2>
+    <div>
+        <form action="/report_revenue" method="GET" class="d-inline-block w-auto me-2">
+            <select name="year" class="form-select d-inline-block w-auto shadow-none" onchange="this.form.submit()">
+                <option value="2026" <%= selectedYear == '2026' ? 'selected' : '' %>>ปี 2026</option>
+                <option value="2025" <%= selectedYear == '2025' ? 'selected' : '' %>>ปี 2025</option>
+            </select>
+        </form>
+        <button class="btn btn-outline-secondary rounded-pill px-3" onclick="window.print()">
+            <i class="bi bi-printer"></i> พิมพ์รายงาน
+        </button>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-white p-3" style="border-radius: 12px; border-left: 5px solid #198754 !important;">
+            <small class="text-muted">รายได้รวมปีนี้</small>
+            <h3 class="fw-bold mb-0 text-success"><%= totalRevenue.toLocaleString() %> <small class="fs-6 fw-normal">฿</small></h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-white p-3" style="border-radius: 12px; border-left: 5px solid #ff6b00 !important;">
+            <small class="text-muted">จำนวนบิลที่ชำระแล้ว</small>
+            <h3 class="fw-bold mb-0" style="color: #ff6b00;"><%= totalBills %> <small class="fs-6 fw-normal">ใบ</small></h3>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px;">
+            <div class="card-header bg-white border-0 py-3">
+                <h6 class="mb-0 fw-bold">แนวโน้มรายได้รายเดือน (บาท)</h6>
+            </div>
+            <div class="card-body">
+                <div style="position: relative; height:350px;">
+                    <canvas id="revenueLineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // ดึงข้อมูลจากฝั่ง Server
+    const revenueValues = JSON.parse('<%- JSON.stringify(revenueData) %>');
+
+    const ctx = document.getElementById('revenueLineChart').getContext('2d');
+    
+    // สร้าง Gradient สำหรับกราฟเส้น
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(25, 135, 84, 0.3)');
+    gradient.addColorStop(1, 'rgba(25, 135, 84, 0.0)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'],
+            datasets: [{ 
+                label: 'รายได้ (บาท)', 
+                data: revenueValues, 
+                borderColor: '#198754',
+                backgroundColor: gradient,
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4, // ทำให้เส้นโค้งมนดูพรีเมียม
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#198754',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#f1f1f1' },
+                    ticks: { callback: (value) => value.toLocaleString() + ' ฿' }
+                },
+                x: { grid: { display: false } }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1a1c2d',
+                    padding: 10,
+                    callbacks: {
+                        label: (context) => ' ยอดเงิน: ' + context.raw.toLocaleString() + ' บาท'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+<%- include('partials/footer') %>

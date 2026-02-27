@@ -1,0 +1,68 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
+    <h2 class="h4 fw-bold text-dark">
+        <i class="bi bi-pencil-square text-warning me-2"></i>แก้ไขข้อมูลอุปกรณ์ (DEV-<%= String(device.device_id).padStart(3, '0') %>)
+    </h2>
+    <a href="/devices" class="btn btn-outline-secondary rounded-pill px-3">
+        <i class="bi bi-arrow-left"></i> ย้อนกลับ
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+            <div class="card-body p-4">
+                <form action="/update-device/<%= device.device_id %>" method="POST">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ลูกค้าเจ้าของเครื่อง *</label>
+                        <select class="form-select shadow-none" name="customer_id" required>
+                            <% customers.forEach(function(cust) { %>
+                                <option value="<%= cust.customer_id %>" <%= cust.customer_id === device.customer_id ? 'selected' : '' %>>
+                                    <%= cust.first_name %> <%= cust.last_name %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">ประเภทอุปกรณ์ *</label>
+                            <select class="form-select shadow-none" name="device_type" required>
+                                <% const types = ['Notebook', 'PC Desktop', 'MacBook', 'All-in-One', 'Other']; %>
+                                <% types.forEach(function(t) { %>
+                                    <option value="<%= t %>" <%= device.device_type === t ? 'selected' : '' %>><%= t %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">ยี่ห้อ *</label>
+                            <input type="text" class="form-control shadow-none" name="brand" value="<%= device.brand %>" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">รุ่น (Model)</label>
+                        <input type="text" class="form-control shadow-none" name="model" value="<%= device.model %>">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Serial Number (S/N)</label>
+                        <input type="text" class="form-control shadow-none" name="serial_number" value="<%= device.serial_number %>">
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                        <a href="/devices" class="btn btn-light rounded-pill px-4 me-md-2">ยกเลิก</a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm">
+                            <i class="bi bi-check-circle me-1"></i> อัปเดตข้อมูลอุปกรณ์
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,75 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
+    <h2 class="h4 fw-bold text-dark"><i class="bi bi-cash-coin text-primary me-2"></i>ระบบการชำระเงิน</h2>
+    <a href="/add_payment" class="btn btn-primary rounded-pill px-4 shadow-sm">
+        <i class="bi bi-plus-lg me-1"></i> สร้างบิลใหม่
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm" style="border-radius: 12px;">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light text-muted">
+                    <tr>
+                        <th class="ps-4">เลขที่บิล (Invoice)</th>
+                        <th>อ้างอิงงานซ่อม</th>
+                        <th>ลูกค้า</th>
+                        <th>ยอดรวม (บาท)</th>
+                        <th>วันที่ชำระ</th>
+                        <th>สถานะ</th>
+                        <th class="text-end pe-4">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (payments.length === 0) { %>
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">ยังไม่มีข้อมูลการชำระเงิน</td>
+                        </tr>
+                    <% } else { %>
+                        <% payments.forEach(function(p) { %>
+                            <tr>
+                                <td class="ps-4 text-primary fw-bold">INV-<%= String(p.payment_id).padStart(5, '0') %></td>
+                                <td>
+                                    <span class="badge bg-light text-dark border fw-normal">REP-<%= String(p.repair_id).padStart(3, '0') %></span>
+                                </td>
+                                <td><%= p.first_name %> <%= p.last_name %></td>
+                                <td class="fw-bold text-dark"><%= p.total_cost.toLocaleString(undefined, {minimumFractionDigits: 2}) %></td>
+                                <td><small class="text-muted"><%= p.payment_date %></small></td>
+                                <td>
+                                    <% if(p.payment_status === 'Paid') { %>
+                                        <span class="badge bg-success rounded-pill px-3">ชำระแล้ว</span>
+                                    <% } else { %>
+                                        <span class="badge bg-danger rounded-pill px-3">ค้างชำระ</span>
+                                    <% } %>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group">
+                                        <% if(p.payment_status === 'Pending') { %>
+                                            <a href="/edit-payment/<%= p.payment_id %>" class="btn btn-sm btn-outline-success rounded-pill px-3 me-1">
+                                                <i class="bi bi-cash"></i> รับชำระ
+                                            </a>
+                                        <% } else { %>
+                                            <a href="#" class="btn btn-sm btn-outline-secondary rounded-pill px-3 me-1">
+                                                <i class="bi bi-printer"></i> พิมพ์
+                                            </a>
+                                        <% } %>
+                                        <form action="/delete-payment/<%= p.payment_id %>" method="POST" class="d-inline" onsubmit="return confirm('ลบบันทึกการชำระเงิน?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
