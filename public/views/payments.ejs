@@ -35,7 +35,7 @@
                                 <td>
                                     <span class="badge bg-light text-dark border fw-normal">REP-<%= String(p.repair_id).padStart(3, '0') %></span>
                                 </td>
-                                <td><%= p.first_name %> <%= p.last_name %></td>
+                                <td><%= p.first_name ? p.first_name + ' ' + p.last_name : 'ไม่พบชื่อลูกค้า' %></td>
                                 <td class="fw-bold text-dark"><%= p.total_cost.toLocaleString(undefined, {minimumFractionDigits: 2}) %></td>
                                 <td><small class="text-muted"><%= p.payment_date %></small></td>
                                 <td>
@@ -48,14 +48,15 @@
                                 <td class="text-end pe-4">
                                     <div class="btn-group">
                                         <% if(p.payment_status === 'Pending') { %>
-                                            <a href="/edit-payment/<%= p.payment_id %>" class="btn btn-sm btn-outline-success rounded-pill px-3 me-1">
+                                            <a href="/mark-paid/<%= p.payment_id %>" class="btn btn-sm btn-outline-success rounded-pill px-3 me-1" onclick="return confirm('ยืนยันว่าลูกค้าชำระเงินเรียบร้อยแล้ว?');">
                                                 <i class="bi bi-cash"></i> รับชำระ
                                             </a>
                                         <% } else { %>
-                                            <a href="#" class="btn btn-sm btn-outline-secondary rounded-pill px-3 me-1">
+                                            <a href="/repair-details/<%= p.repair_id %>" class="btn btn-sm btn-outline-secondary rounded-pill px-3 me-1" target="_blank">
                                                 <i class="bi bi-printer"></i> พิมพ์
                                             </a>
                                         <% } %>
+                                        
                                         <form action="/delete-payment/<%= p.payment_id %>" method="POST" class="d-inline" onsubmit="return confirm('ลบบันทึกการชำระเงิน?');">
                                             <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle">
                                                 <i class="bi bi-trash"></i>

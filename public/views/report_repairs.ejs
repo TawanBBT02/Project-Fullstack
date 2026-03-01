@@ -5,27 +5,42 @@
     <h2 class="h4 fw-bold text-dark"><i class="bi bi-bar-chart-fill text-primary me-2"></i>รายงานวิเคราะห์งานซ่อม</h2>
 </div>
 
-<div class="card border-0 shadow-sm mb-4" style="border-radius: 12px;">
-    <div class="card-body">
-        <form action="/report_repairs" method="GET" class="row g-3 align-items-end">
-            <div class="col-md-8">
-                <label class="form-label fw-bold small">กรองตามช่างเทคนิคที่รับผิดชอบ</label>
-                <select name="tech_id" class="form-select shadow-none border-primary-subtle">
+<div class="card p-4 mb-4 shadow-sm border-0">
+    <form action="/report_repairs" method="GET">
+        <div class="row align-items-end">
+            
+            <div class="col-md-5 mb-3">
+                <label class="form-label text-muted small fw-bold">กรองตามช่างเทคนิคที่รับผิดชอบ</label>
+                <select class="form-select shadow-none" name="tech_id">
                     <option value="">-- แสดงช่างทุกคน (รวมทั้งร้าน) --</option>
-                    <% technicians.forEach(function(tech) { %>
-                        <option value="<%= tech.technician_id %>" <%= selectedTech == tech.technician_id ? 'selected' : '' %>>
-                            ช่าง<%= tech.first_name %> <%= tech.last_name %>
-                        </option>
-                    <% }); %>
+                    <% if (typeof technicians !== 'undefined') { %>
+                        <% technicians.forEach(function(t) { %>
+                            <option value="<%= t.technician_id %>" <%= (typeof currentTech !== 'undefined' && currentTech == t.technician_id) ? 'selected' : '' %>>
+                                <%= t.first_name %> <%= t.last_name %>
+                            </option>
+                        <% }); %>
+                    <% } %>
                 </select>
             </div>
-            <div class="col-md-4">
-                <button type="submit" class="btn btn-primary w-100 rounded-pill shadow-sm">
+
+            <div class="col-md-4 mb-3">
+                <label class="form-label text-muted small fw-bold">กรองตามสถานะงานซ่อม</label>
+                <select class="form-select shadow-none" name="status">
+                    <option value="">-- แสดงทุกสถานะ --</option>
+                    <option value="Pending" <%= (typeof currentStatus !== 'undefined' && currentStatus === 'Pending') ? 'selected' : '' %>>รอดำเนินการ (Pending)</option>
+                    <option value="In Progress" <%= (typeof currentStatus !== 'undefined' && currentStatus === 'In Progress') ? 'selected' : '' %>>กำลังซ่อม (In Progress)</option>
+                    <option value="Completed" <%= (typeof currentStatus !== 'undefined' && currentStatus === 'Completed') ? 'selected' : '' %>>ซ่อมเสร็จสิ้น (Completed)</option>
+                </select>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <button type="submit" class="btn btn-primary w-100 fw-bold" style="background-color: #ff6b00; border-color: #ff6b00;">
                     <i class="bi bi-funnel-fill me-1"></i> กรองข้อมูล
                 </button>
             </div>
-        </form>
-    </div>
+            
+        </div>
+    </form>
 </div>
 
 <div class="row">
@@ -106,4 +121,65 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // 1. รับข้อมูลจากหลังบ้าน (แปลงด้วย EJS เป็น JSON)
+    const rawStatusData = <%- JSON.stringify(statusData || []) %>;
+    const rawBrandData = <%- JSON.stringify(brandData || []) %>;
+
+    // ==========================================
+    // 📊 กราฟแท่ง (สถานะงานซ่อม)
+    // ==========================================
+    // ตั้งค่าแกน X และหาตัวเลขให้ตรงกับสถานะนั้นๆ
+    const statusLabels = ['Pending', 'In Progress', 'Completed'];
+    const statusDisplayLabels = ['รอดำเนินการ', 'กำลังซ่อม', 'ซ่อมเสร็จสิ้น'];
+    
+    const statusCounts = statusLabels.map(label => {
+        const found = rawStatusData.find(item => item.status === label);
+        return found ? found.count : 0; // ถ้าไม่มีข้อมูลให้เป็น 0
+    });
+
+    const ctxRepair = document.getElementById('repairChart').getContext('2d');
+    new Chart(ctxRepair, {
+        type: 'bar', 
+        data: {
+            labels: statusDisplayLabels, 
+            datasets: [{
+                label: 'จำนวน (เครื่อง)',
+                data: statusCounts, // <--- ใช้ข้อมูลจริงตรงนี้!
+                backgroundColor: ['#6c757d', '#ffc107', '#28a745'], 
+                borderRadius: 6 
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+
+
+    // ==========================================
+    // 🍩 กราฟโดนัท (สัดส่วนอุปกรณ์)
+    // ==========================================
+    // ดึงรายชื่อยี่ห้อและจำนวนมาแยกเป็น Array 
+    const brandLabels = rawBrandData.map(item => item.brand || 'ไม่ระบุ');
+    const brandCounts = rawBrandData.map(item => item.count);
+    // เตรียมชุดสีเผื่อมีหลายยี่ห้อ
+    const pieColors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40', '#ea4335', '#34a853'];
+
+    const ctxDevice = document.getElementById('devicePieChart').getContext('2d');
+    new Chart(ctxDevice, {
+        type: 'doughnut', 
+        data: {
+            labels: brandLabels, // <--- ยี่ห้อจริง
+            datasets: [{
+                data: brandCounts, // <--- จำนวนจริง
+                backgroundColor: pieColors, 
+                borderWidth: 0
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            cutout: '70%', 
+            plugins: { legend: { position: 'bottom' } } 
+        }
+    });
+</script>
 <%- include('partials/footer') %>

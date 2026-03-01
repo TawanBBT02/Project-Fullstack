@@ -27,7 +27,7 @@
             border-radius: 15px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
             width: 100%; 
-            max-width: 500px; 
+            max-width: 450px; 
             padding: 40px; 
         }
         .form-control:focus { 
@@ -49,28 +49,21 @@
 <div class="signup-card">
     <div class="text-center mb-4">
         <h2 class="fw-bold text-dark"><i class="bi bi-person-plus" style="color: var(--main-orange);"></i> สร้างบัญชีใหม่</h2>
-        <p class="text-muted">สมัครสมาชิกเพื่อติดตามสถานะงานซ่อมของคุณ</p>
+        <p class="text-muted small">สมัครสมาชิกเพื่อเข้าสู่ระบบ ComRepair</p>
     </div>
     
     <form action="/signup" method="POST">
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label text-muted small fw-bold">ชื่อ *</label>
-                <input type="text" class="form-control shadow-none" name="first_name" required>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label text-muted small fw-bold">นามสกุล *</label>
-                <input type="text" class="form-control shadow-none" name="last_name" required>
-            </div>
-        </div>
+        
         <div class="mb-3">
-            <label class="form-label text-muted small fw-bold">เบอร์โทรศัพท์ *</label>
-            <input type="text" class="form-control shadow-none" name="phone" required>
+            <label class="form-label text-muted small fw-bold">ชื่อผู้ใช้ (Username) *</label>
+            <input type="text" class="form-control shadow-none" name="username" placeholder="ตั้งชื่อสำหรับเข้าระบบ" required>
         </div>
+
         <div class="mb-3">
             <label class="form-label text-muted small fw-bold">อีเมล *</label>
-            <input type="email" class="form-control shadow-none" name="email" required>
+            <input type="email" class="form-control shadow-none" name="email" placeholder="example@email.com" required>
         </div>
+        
         <div class="mb-4">
             <label class="form-label text-muted small fw-bold">รหัสผ่านสำหรับเข้าใช้งาน *</label>
             <input type="password" class="form-control shadow-none" name="password" required>

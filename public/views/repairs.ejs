@@ -50,13 +50,22 @@
                                         <span class="badge bg-dark rounded-pill px-3"><%= r.status %></span>
                                     <% } %>
                                 </td>
-                                <td class="text-end pe-4">
-                                    <a href="/repair-details/<%= r.repair_id %>" class="btn btn-sm btn-info text-white rounded-pill px-3 shadow-sm me-1">
-                                        <i class="bi bi-search"></i> รายละเอียด
-                                    </a>
-                                    <a href="/edit-repair/<%= r.repair_id %>" class="btn btn-sm btn-outline-warning rounded-circle shadow-sm">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
+                                <td class="text-end pe-3">
+                                    <div class="btn-group">
+                                        <a href="/repair-details/<%= r.repair_id %>" class="btn btn-sm btn-info text-white rounded-pill px-3 me-1">
+                                            <i class="bi bi-search"></i> รายละเอียด
+                                        </a>
+                                        
+                                        <a href="/edit-repair/<%= r.repair_id %>" class="btn btn-sm btn-outline-warning rounded-circle me-1">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+
+                                        <form action="/delete-repair/<%= r.repair_id %>" method="POST" class="d-inline" onsubmit="return confirm('⚠️ คำเตือน: การลบรายการแจ้งซ่อมจะทำให้ข้อมูลการชำระเงินที่เกี่ยวข้องถูกลบไปด้วย คุณต้องการดำเนินการต่อหรือไม่?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         <% }) %>

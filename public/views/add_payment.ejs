@@ -19,12 +19,12 @@
                         <select class="form-select shadow-none" id="repair_id" name="repair_id" required>
                             <option value="">-- เลือกบิลงานซ่อมที่ซ่อมเสร็จ/รอเก็บเงิน --</option>
                             <% repairs.forEach(function(r) { %>
-                                <option value="<%= r.repair_id %>">
+                                <option value="<%= r.repair_id %>" <%= (typeof selectedRepairId !== 'undefined' && selectedRepairId == r.repair_id) ? 'selected' : '' %>>
                                     REP-<%= String(r.repair_id).padStart(3, '0') %> | <%= r.brand %> <%= r.model %> (ลูกค้า: <%= r.first_name %> <%= r.last_name %>)
                                 </option>
                             <% }); %>
                         </select>
-                        <div class="form-text">ระบบจะแสดงเฉพาะงานซ่อมที่ยังไม่มีการออกบิล</div>
+                        <div class="form-text text-muted small"><i class="bi bi-info-circle me-1"></i>ระบบจะแสดงเฉพาะงานซ่อมที่ยังไม่มีการออกบิล</div>
                     </div>
 
                     <div class="row">

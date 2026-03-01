@@ -64,42 +64,45 @@
                 </div> 
             </div>
         </div>
-
         <div class="card shadow-sm mb-4 border-0" style="border-radius: 12px;">
-            <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold">ข้อมูลลูกค้าและอุปกรณ์</h6></div>
-            <div class="card-body pt-0">
-                <div class="row mb-3">
-                    <div class="col-sm-4 text-muted small">ชื่อลูกค้า:</div>
-                    <div class="col-sm-8 fw-bold text-dark"><%= repair.first_name %> <%= repair.last_name %></div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-sm-4 text-muted small">เบอร์ติดต่อ:</div>
-                    <div class="col-sm-8 text-primary"><%= repair.phone %></div>
-                </div>
-                <hr class="opacity-25">
-                <div class="row mb-3">
-                    <div class="col-sm-4 text-muted small">ประเภท:</div>
-                    <div class="col-sm-8"><span class="badge bg-light text-dark border fw-normal"><%= repair.device_type %></span></div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-sm-4 text-muted small">ยี่ห้อ / รุ่น:</div>
-                    <div class="col-sm-8 fw-bold"><%= repair.brand %> <%= repair.model %></div>
-                </div>
-                <div class="row mb-0">
-                    <div class="col-sm-4 text-muted small">Serial Number:</div>
-                    <div class="col-sm-8 font-monospace text-muted small"><%= repair.serial_number || 'ไม่ระบุ' %></div>
-                </div>
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="mb-0 fw-bold text-success"><i class="bi bi-cash-coin me-2"></i>ข้อมูลค่าใช้จ่ายและการชำระเงิน</h6>
             </div>
-        </div>
-
-        <div class="card shadow-sm mb-4 border-0" style="border-radius: 12px;">
-            <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>อาการเสียที่แจ้ง</h6></div>
             <div class="card-body bg-light mx-3 mb-3" style="border-radius: 8px;">
-                <p class="mb-0"><%= repair.problem_type %></p>
+                <% if (repair.payment_id) { %>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 text-muted small">เลขที่บิล:</div>
+                        <div class="col-sm-8 fw-bold text-primary">INV-<%= String(repair.payment_id).padStart(5, '0') %></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 text-muted small">ยอดรวมทั้งสิ้น:</div>
+                        <div class="col-sm-8 fw-bold text-dark fs-5"><%= repair.total_cost.toLocaleString() %>.00 บาท</div>
+                    </div>
+                    <div class="row mb-0">
+                        <div class="col-sm-4 text-muted small">สถานะการชำระ:</div>
+                        <div class="col-sm-8">
+                            <% if(repair.payment_status === 'Paid') { %>
+                                <span class="badge bg-success rounded-pill px-3">ชำระแล้ว</span>
+                                <small class="text-muted ms-2 d-block d-sm-inline mt-1 mt-sm-0">(เมื่อ: <%= repair.payment_date %>)</small>
+                            <% } else { %>
+                                <span class="badge bg-danger rounded-pill px-3">ค้างชำระ</span>
+                                <a href="/edit-payment/<%= repair.payment_id %>" class="btn btn-sm btn-outline-success rounded-pill ms-2 print-hide">
+                                    <i class="bi bi-check-circle"></i> รับชำระ
+                                </a>
+                            <% } %>
+                        </div>
+                    </div>
+                    <% } else { %>
+                        <div class="text-center py-2">
+                            <p class="text-muted mb-2 small"><i class="bi bi-info-circle me-1"></i> ยังไม่มีการประเมินราคาหรือออกบิลค่าใช้จ่าย</p>
+                            <a href="/payments" class="btn btn-sm btn-outline-primary rounded-pill print-hide">
+                                <i class="bi bi-plus-circle me-1"></i> ไปหน้าสร้างบิล
+                            </a>
+                        </div>
+                    <% } %>
+                </div>
             </div>
-        </div>
     </div>
-
     <div class="col-lg-5">
         <div class="card shadow-sm mb-4 border-0" style="border-radius: 12px;">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-0">
@@ -161,7 +164,45 @@
                 </ul>
             </div>
         </div>
+
+        </div>
+
+        <div class="card shadow-sm mb-4 border-0" style="border-radius: 12px;">
+            <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold">ข้อมูลลูกค้าและอุปกรณ์</h6></div>
+            <div class="card-body pt-0">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted small">ชื่อลูกค้า:</div>
+                    <div class="col-sm-8 fw-bold text-dark"><%= repair.first_name %> <%= repair.last_name %></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted small">เบอร์ติดต่อ:</div>
+                    <div class="col-sm-8 text-primary"><%= repair.phone %></div>
+                </div>
+                <hr class="opacity-25">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted small">ประเภท:</div>
+                    <div class="col-sm-8"><span class="badge bg-light text-dark border fw-normal"><%= repair.device_type %></span></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted small">ยี่ห้อ / รุ่น:</div>
+                    <div class="col-sm-8 fw-bold"><%= repair.brand %> <%= repair.model %></div>
+                </div>
+                <div class="row mb-0">
+                    <div class="col-sm-4 text-muted small">Serial Number:</div>
+                    <div class="col-sm-8 font-monospace text-muted small"><%= repair.serial_number || 'ไม่ระบุ' %></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4 border-0" style="border-radius: 12px;">
+            <div class="card-header bg-white py-3 border-0"><h6 class="mb-0 fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>อาการเสียที่แจ้ง</h6></div>
+            <div class="card-body bg-light mx-3 mb-3" style="border-radius: 8px;">
+                <p class="mb-0"><%= repair.problem_type %></p>
+            </div>
+        </div>
     </div>
+
+    
 </div>
 
 <style type="text/css" media="print">
