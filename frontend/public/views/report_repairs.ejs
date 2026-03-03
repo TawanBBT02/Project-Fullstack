@@ -1,0 +1,188 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<style>
+    @media print {
+        .sidebar, .navbar, .btn, .filter-box { display: none !important; }
+        .container-fluid { padding: 0 !important; width: 100% !important; }
+        .card { border: none !important; box-shadow: none !important; }
+    }
+</style>
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <h2 class="fw-bold" style="color: var(--sidebar-bg);">
+            <i class="bi bi-file-earmark-bar-graph text-primary me-2"></i>รายงานการแจ้งซ่อม
+        </h2>
+        <div>
+            <button class="btn btn-outline-primary me-2" onclick="window.print()">
+                <i class="bi bi-printer-fill"></i> พิมพ์รายงาน
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4 filter-box bg-light">
+        <div class="card-body">
+            <form id="filterForm" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold text-secondary">ตั้งแต่วันที่</label>
+                    <input type="date" class="form-control" id="startDate" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold text-secondary">ถึงวันที่</label>
+                    <input type="date" class="form-control" id="endDate" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold text-secondary">ช่างผู้รับผิดชอบ</label>
+                    <select class="form-select" id="filterTechnicianId">
+                        <option value="" selected>-- 👨‍🔧 ช่างทุกคน --</option>
+                        </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary fw-bold w-100">
+                        <i class="bi bi-search me-2"></i> ค้นหา
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="alert alert-info border-0 shadow-sm mb-0">
+                <h6 class="text-info fw-bold mb-1">จำนวนงานซ่อมที่พบ</h6>
+                <h3 class="fw-bold mb-0" id="totalCount">0 <span class="fs-6 text-muted fw-normal">รายการ</span></h3>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="alert alert-success border-0 shadow-sm mb-0">
+                <h6 class="text-success fw-bold mb-1">ยอดเงินประเมิน/รับชำระแล้วรวม</h6>
+                <h3 class="fw-bold mb-0 text-success" id="totalAmount">฿0.00</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-center">วันที่รับเครื่อง</th>
+                            <th class="text-center">รหัสงาน</th>
+                            <th>ชื่อลูกค้า</th>
+                            <th>อุปกรณ์</th>
+                            <th>ช่างผู้รับผิดชอบ</th>
+                            <th class="text-center">สถานะ</th>
+                            <th class="text-end pe-3">ยอดเงิน (บาท)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody">
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                กำลังโหลดข้อมูลรายงาน...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ตั้งค่า Default วันที่ย้อนหลัง 1 เดือน
+    const today = new Date();
+    const lastMonth = new Date();
+    lastMonth.setDate(today.getDate() - 30);
+    document.getElementById('endDate').valueAsDate = today;
+    document.getElementById('startDate').valueAsDate = lastMonth;
+
+    // 🌟 1. ฟังก์ชันโหลดรายชื่อช่างมาใส่ Dropdown
+    async function loadTechnicianFilter() {
+        try {
+            const response = await axios.get('http://localhost:5000/api/technicians');
+            const techs = response.data.data;
+            let options = '<option value="" selected>-- 👨‍🔧 ช่างทุกคน --</option>';
+            techs.forEach(t => {
+                options += `<option value="${t.technician_id}">ช่าง${t.first_name} ${t.last_name || ''}</option>`;
+            });
+            document.getElementById('filterTechnicianId').innerHTML = options;
+        } catch (error) {
+            console.error("โหลดรายชื่อช่างพลาด:", error);
+        }
+    }
+
+    // 🌟 2. ฟังก์ชันโหลดรายงาน (เพิ่มรับพารามิเตอร์ช่าง)
+    async function loadReport(start = '', end = '', techId = '') {
+        try {
+            // สร้าง URL และแนบค่าตัวกรองไปให้หลังบ้าน
+            let url = 'http://localhost:5000/api/reports/repairs?';
+            const queryParams = [];
+            
+            if(start && end) queryParams.push(`startDate=${start}&endDate=${end}`);
+            if(techId) queryParams.push(`technicianId=${techId}`); // 🌟 แนบ ID ช่างไปกับ URL
+
+            url += queryParams.join('&');
+
+            const response = await axios.get(url);
+            const records = response.data.data;
+            
+            let html = '';
+            let sumAmount = 0;
+
+            if (records.length === 0) {
+                html = `<tr><td colspan="7" class="text-center py-5 text-danger fw-bold"><i class="bi bi-x-circle me-2"></i>ไม่พบข้อมูลในช่วงเวลาและเงื่อนไขที่เลือก</td></tr>`;
+            } else {
+                records.forEach(r => {
+                    const repId = String(r.repair_id).padStart(3, '0');
+                    const amount = Number(r.amount || 0);
+                    sumAmount += amount; 
+
+                    const techName = (r.tech_first || r.tech_last) ? `ช่าง${r.tech_first || ''} ${r.tech_last || ''}` : '<span class="text-muted">ไม่ระบุ</span>';
+
+                    html += `
+                        <tr>
+                            <td class="text-center">${r.receive_date || '-'}</td>
+                            <td class="text-center fw-bold text-secondary">REP-${repId}</td>
+                            <td>${r.first_name || '-'} ${r.last_name || ''}</td>
+                            <td>${r.brand || ''} ${r.model || ''}</td>
+                            <td>${techName}</td>
+                            <td class="text-center">${r.status}</td>
+                            <td class="text-end pe-3 text-success fw-bold">${amount > 0 ? amount.toLocaleString('th-TH', {minimumFractionDigits: 2}) : '-'}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('reportTableBody').innerHTML = html;
+            document.getElementById('totalCount').innerHTML = `${records.length} <span class="fs-6 text-muted fw-normal">รายการ</span>`;
+            document.getElementById('totalAmount').innerText = `฿${sumAmount.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+
+        } catch (error) {
+            console.error("ดึงข้อมูลรายงานพลาด:", error);
+            document.getElementById('reportTableBody').innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">ไม่สามารถดึงข้อมูลได้</td></tr>`;
+        }
+    }
+
+    // 🌟 เมื่อกดปุ่มค้นหา ให้เอาค่าทั้งวันที่และช่างไปค้น
+    document.getElementById('filterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        const techId = document.getElementById('filterTechnicianId').value; // เอาค่าช่างมา
+        
+        document.getElementById('reportTableBody').innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2"></div> กำลังค้นหา...</td></tr>`;
+        
+        loadReport(start, end, techId); // สั่งค้นหาพร้อมตัวกรอง 3 ตัว
+    });
+
+    // ตอนเปิดหน้าเว็บ โหลดรายชื่อช่างใส่ Dropdown ก่อน แล้วค่อยโหลดรายงานเริ่มต้น
+    loadTechnicianFilter().then(() => {
+        loadReport(document.getElementById('startDate').value, document.getElementById('endDate').value, '');
+    });
+</script>
+
+</body>
+</html>

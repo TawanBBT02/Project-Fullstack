@@ -1,0 +1,149 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <h2 class="fw-bold" style="color: var(--sidebar-bg);">
+            <i class="bi bi-cash-coin text-success me-2"></i>รายการชำระเงิน
+        </h2>
+        <div>
+            <button class="btn btn-outline-secondary me-2" onclick="loadPayments()">
+                <i class="bi bi-arrow-clockwise"></i> รีเฟรช
+            </button>
+            <a href="/add_payment" class="btn btn-success fw-bold shadow-sm">
+                <i class="bi bi-plus-circle"></i> รับชำระเงิน
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">รหัสบิล</th>
+                            <th>อ้างอิงงานซ่อม</th>
+                            <th>ลูกค้า</th>
+                            <th>ยอดชำระ (บาท)</th>
+                            <th>วันที่ชำระ</th>
+                            <th class="text-center">สถานะ</th>
+                            <th class="text-end pe-4">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentTableBody">
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
+                                กำลังโหลดข้อมูลการชำระเงิน...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function loadPayments() {
+        try {
+            const response = await axios.get('http://localhost:5000/api/payments');
+            const payments = response.data.data;
+            let html = '';
+
+            if (payments.length === 0) {
+                // เปลี่ยน colspan เป็น 7 ให้ตรงกับจำนวนคอลัมน์ที่เหลือ
+                html = `
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-receipt fs-1 d-block mb-2"></i>
+                            ยังไม่มีข้อมูลการชำระเงินในระบบ
+                        </td>
+                    </tr>
+                `;
+            } else {
+                payments.forEach(p => {
+                    const payIdFormatted = String(p.payment_id).padStart(3, '0');
+                    const repIdFormatted = String(p.repair_id).padStart(3, '0');
+                    
+                    // แปลงยอดเงินให้มีคอมม่า
+                    const amountFormatted = Number(p.amount || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 });
+
+                    // 🌟 ป้ายสถานะการจ่ายเงิน (ตรวจสอบให้ตรงกับฐานข้อมูล)
+                    let statusBadge = '';
+                    if(p.status === 'Paid' || p.status === 'ชำระแล้ว') {
+                        statusBadge = `<span class="badge bg-success rounded-pill px-3 py-2">ชำระแล้ว</span>`;
+                    } else if(p.status === 'Unpaid' || p.status === 'ค้างชำระ') {
+                        statusBadge = `<span class="badge bg-danger rounded-pill px-3 py-2">ค้างชำระ</span>`;
+                    } else {
+                        statusBadge = `<span class="badge bg-secondary rounded-pill px-3 py-2">${p.status || 'ไม่ระบุ'}</span>`;
+                    }
+
+                    html += `
+                        <tr>
+                            <td class="ps-4 fw-bold text-secondary">PAY-${payIdFormatted}</td>
+                            <td>
+                                <a href="/repair-details/${p.repair_id}" class="text-decoration-none fw-bold">REP-${repIdFormatted}</a>
+                            </td>
+                            <td>
+                                <div class="text-dark">${p.first_name || 'ไม่ระบุ'} ${p.last_name || ''}</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-success">฿${amountFormatted}</div>
+                            </td>
+                            <td>${p.payment_date || '-'}</td>
+                            <td class="text-center">${statusBadge}</td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group shadow-sm">
+                                    <button class="btn btn-sm btn-light text-primary border" title="พิมพ์ใบเสร็จ" onclick="window.print()">
+                                        <i class="bi bi-printer-fill"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-light text-danger border" title="ลบ" onclick="deletePayment(${p.payment_id})">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('paymentTableBody').innerHTML = html;
+
+        } catch (error) {
+            console.error("ดึงข้อมูลการชำระเงินพลาด:", error);
+            document.getElementById('paymentTableBody').innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-danger fw-bold">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>ไม่สามารถเชื่อมต่อฐานข้อมูลได้
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    // ==========================================
+    // 🗑️ ฟังก์ชันลบบิลชำระเงิน
+    // ==========================================
+    async function deletePayment(id) {
+        if (confirm('⚠️ ต้องการลบบิลการชำระเงินนี้ทิ้งใช่หรือไม่? (การกระทำนี้ไม่สามารถกู้คืนได้)')) {
+            try {
+                const response = await axios.delete(`http://localhost:5000/api/payments/${id}`);
+                if (response.data.success) {
+                    alert('✅ ' + response.data.message);
+                    loadPayments(); // โหลดตารางใหม่
+                }
+            } catch (error) {
+                console.error("ลบบิลพลาด:", error);
+                alert('❌ ไม่สามารถลบได้ กรุณาลองใหม่อีกครั้ง');
+            }
+        }
+    }
+
+    // สั่งให้ทำงานทันทีเมื่อเปิดหน้าเว็บ
+    loadPayments();
+</script>
+
+</body>
+</html>

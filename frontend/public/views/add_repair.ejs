@@ -1,0 +1,139 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <h2 class="fw-bold" style="color: var(--sidebar-bg);">
+            <i class="bi bi-tools text-primary me-2"></i>เปิดรายการแจ้งซ่อมใหม่
+        </h2>
+        <a href="/repairs" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-arrow-left"></i> กลับไปหน้ารายการ
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3 mx-auto" style="max-width: 800px;">
+        <div class="card-body p-4 p-md-5">
+            <form id="addRepairForm">
+                
+                <div class="mb-4 bg-light p-3 rounded border">
+                    <label class="form-label fw-bold text-primary"><i class="bi bi-pc-display me-2"></i>เลือกอุปกรณ์ที่ต้องการซ่อม <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-lg" id="deviceId" required>
+                        <option value="" disabled selected>⏳ กำลังโหลดรายการอุปกรณ์...</option>
+                        </select>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label class="form-label fw-bold text-secondary">วันที่รับเครื่อง <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control form-control-lg bg-light" id="receiveDate" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary">ช่างผู้รับผิดชอบ <span class="text-danger">*</span></label>
+                        <select class="form-select form-select-lg bg-light" id="technicianId" required>
+                            <option value="" disabled selected>⏳ กำลังโหลดรายชื่อช่าง...</option>
+                            </select>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-secondary">อาการเสีย / รายละเอียดที่ลูกค้าแจ้ง <span class="text-danger">*</span></label>
+                    <textarea class="form-control bg-light" id="description" rows="4" placeholder="เช่น เปิดไม่ติด, จอแตก, ลง Windows ใหม่..." required></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-secondary">สถานะเริ่มต้น <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-lg bg-light" id="status" required>
+                        <option value="Pending" selected>⏳ รอดำเนินการ (Pending)</option>
+                        <option value="In Progress">🛠️ กำลังซ่อม (In Progress)</option>
+                        <option value="Completed">✅ ซ่อมเสร็จสิ้น (Completed)</option>
+                    </select>
+                </div>
+
+                <hr class="mb-4">
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="reset" class="btn btn-light border btn-lg px-4">ล้างข้อมูล</button>
+                    <button type="submit" class="btn btn-primary fw-bold btn-lg px-5 shadow-sm">
+                        <i class="bi bi-save me-2"></i> บันทึกเปิดงานซ่อม
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // เซ็ตวันที่ปัจจุบันเป็นค่าเริ่มต้น
+    document.getElementById('receiveDate').valueAsDate = new Date();
+
+    // ==========================================
+    // 1. ฟังก์ชันโหลด "อุปกรณ์" และ "ช่าง" มาใส่ Dropdown
+    // ==========================================
+    async function loadDropdownData() {
+        try {
+            // 🌟 ทริค: ใช้ Promise.all เพื่อดึงข้อมูล 2 เส้นทางพร้อมๆ กัน (เว็บจะโหลดเร็วกว่า)
+            const [devicesResponse, techsResponse] = await Promise.all([
+                axios.get('http://localhost:5000/api/devices'),
+                axios.get('http://localhost:5000/api/technicians')
+            ]);
+
+            const devices = devicesResponse.data.data;
+            const techs = techsResponse.data.data;
+
+            // --- จัดการ Dropdown อุปกรณ์ ---
+            let devOptions = '<option value="" disabled selected>-- คลิกลูกศรเพื่อเลือกอุปกรณ์ --</option>';
+            devices.forEach(d => {
+                const devId = String(d.device_id).padStart(3, '0');
+                // โชว์รหัส ยี่ห้อ และชื่อเจ้าของ
+                devOptions += `<option value="${d.device_id}">DEV-${devId} | ${d.brand || ''} ${d.model || ''} (ลูกค้า: ${d.first_name || 'ไม่ระบุ'})</option>`;
+            });
+            document.getElementById('deviceId').innerHTML = devOptions;
+
+            // --- จัดการ Dropdown ช่าง ---
+            let techOptions = '<option value="" disabled selected>-- คลิกลูกศรเพื่อเลือกช่างซ่อม --</option>';
+            techs.forEach(t => {
+                const techId = String(t.technician_id).padStart(3, '0');
+                techOptions += `<option value="${t.technician_id}">TECH-${techId} | ช่าง${t.first_name || ''}</option>`;
+            });
+            document.getElementById('technicianId').innerHTML = techOptions;
+
+        } catch (error) {
+            console.error("โหลดข้อมูลตัวเลือกพลาด:", error);
+            document.getElementById('deviceId').innerHTML = '<option value="" disabled selected>❌ ดึงข้อมูลอุปกรณ์ไม่สำเร็จ</option>';
+            document.getElementById('technicianId').innerHTML = '<option value="" disabled selected>❌ ดึงข้อมูลช่างไม่สำเร็จ</option>';
+        }
+    }
+
+    // ==========================================
+    // 2. ฟังก์ชันส่งข้อมูลเปิดบิลงานซ่อม
+    // ==========================================
+    document.getElementById('addRepairForm').addEventListener('submit', async function(e) {
+        e.preventDefault(); 
+
+        const data = {
+            device_id: document.getElementById('deviceId').value,
+            technician_id: document.getElementById('technicianId').value,
+            receive_date: document.getElementById('receiveDate').value,
+            description: document.getElementById('description').value,
+            status: document.getElementById('status').value
+        };
+
+        try {
+            const response = await axios.post('http://localhost:5000/api/repairs', data);
+
+            if (response.data.success) {
+                alert('✅ เปิดงานซ่อมใหม่เรียบร้อยแล้ว!');
+                window.location.href = '/repairs'; // เด้งกลับไปหน้ารายการงานซ่อม
+            }
+        } catch (error) {
+            console.error("ส่งข้อมูลพลาด:", error);
+            alert('❌ เกิดข้อผิดพลาด ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง');
+        }
+    });
+
+    // สั่งให้โหลด Dropdown ทั้งสองตัวทันทีที่เปิดหน้า
+    loadDropdownData();
+</script>
+
+</body>
+</html>

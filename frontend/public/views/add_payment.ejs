@@ -1,0 +1,129 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <h2 class="fw-bold" style="color: var(--sidebar-bg);">
+            <i class="bi bi-cash-stack text-success me-2"></i>รับชำระเงิน / เปิดบิลใหม่
+        </h2>
+        <a href="/payments" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-arrow-left"></i> กลับไปหน้ารายการ
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3 mx-auto" style="max-width: 800px;">
+        <div class="card-body p-4 p-md-5">
+            <form id="addPaymentForm">
+                
+                <div class="mb-4 bg-light p-3 rounded border">
+                    <label class="form-label fw-bold text-success"><i class="bi bi-tools me-2"></i>อ้างอิงจากงานซ่อม (Repair ID) <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-lg" id="repairId" required>
+                        <option value="" disabled selected>⏳ กำลังโหลดรายการงานซ่อม...</option>
+                        </select>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label class="form-label fw-bold text-secondary">ยอดชำระเงิน (บาท) <span class="text-danger">*</span></label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-light border-end-0">฿</span>
+                            <input type="number" step="0.01" class="form-control bg-light border-start-0" id="amount" placeholder="0.00" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary">วันที่ชำระเงิน <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control form-control-lg bg-light" id="paymentDate" required>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label class="form-label fw-bold text-secondary">ช่องทางการชำระเงิน <span class="text-danger">*</span></label>
+                        <select class="form-select form-select-lg bg-light" id="paymentMethod" required>
+                            <option value="เงินสด">💵 เงินสด (Cash)</option>
+                            <option value="โอนเงิน">📱 โอนเงิน (Bank Transfer)</option>
+                            <option value="บัตรเครดิต">💳 บัตรเครดิต (Credit Card)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary">สถานะบิล <span class="text-danger">*</span></label>
+                        <select class="form-select form-select-lg bg-light" id="status" required>
+                            <option value="Paid" selected>✅ ชำระแล้ว</option>
+                            <option value="Unpaid">❌ ค้างชำระ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="mb-4">
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="reset" class="btn btn-light border btn-lg px-4">ล้างข้อมูล</button>
+                    <button type="submit" class="btn btn-success fw-bold btn-lg px-5 shadow-sm">
+                        <i class="bi bi-check-circle me-2"></i> บันทึกการรับเงิน
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 🌟 เซ็ตวันที่ปัจจุบันให้ช่องวันที่โดยอัตโนมัติ
+    document.getElementById('paymentDate').valueAsDate = new Date();
+
+    // ==========================================
+    // 1. ฟังก์ชันโหลดงานซ่อมมาใส่ Dropdown
+    // ==========================================
+    async function loadRepairsForDropdown() {
+        try {
+            // ไปขอยืม API ของหน้างานซ่อมมาใช้
+            const response = await axios.get('http://localhost:5000/api/repairs');
+            const repairs = response.data.data;
+            let options = '<option value="" disabled selected>-- คลิกลูกศรเพื่อเลือกงานซ่อม --</option>';
+
+            repairs.forEach(r => {
+                const repId = String(r.repair_id).padStart(3, '0');
+                // โชว์ทั้งรหัสงาน ชื่อลูกค้า และสถานะงานซ่อม
+                options += `<option value="${r.repair_id}">REP-${repId} | ลูกค้า: ${r.customer_name || 'ไม่ระบุ'} (${r.device_name || '-'})</option>`;
+            });
+
+            document.getElementById('repairId').innerHTML = options;
+        } catch (error) {
+            console.error("โหลดรายการงานซ่อมพลาด:", error);
+            document.getElementById('repairId').innerHTML = '<option value="" disabled selected>❌ ดึงข้อมูลงานซ่อมไม่สำเร็จ</option>';
+        }
+    }
+
+    // ==========================================
+    // 2. ฟังก์ชันส่งข้อมูลบันทึกการรับเงิน
+    // ==========================================
+    document.getElementById('addPaymentForm').addEventListener('submit', async function(e) {
+        e.preventDefault(); 
+
+        const data = {
+            repair_id: document.getElementById('repairId').value,
+            amount: document.getElementById('amount').value,
+            payment_date: document.getElementById('paymentDate').value,
+            payment_method: document.getElementById('paymentMethod').value,
+            status: document.getElementById('status').value
+        };
+
+        try {
+            const response = await axios.post('http://localhost:5000/api/payments', data);
+
+            if (response.data.success) {
+                alert('✅ บันทึกการรับชำระเงินเรียบร้อยแล้ว!');
+                window.location.href = '/payments'; // เด้งกลับไปหน้าตารางการชำระเงิน
+            }
+        } catch (error) {
+            console.error("ส่งข้อมูลพลาด:", error);
+            alert('❌ เกิดข้อผิดพลาด ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง');
+        }
+    });
+
+    // โหลดงานซ่อมทันทีที่เปิดหน้า
+    loadRepairsForDropdown();
+</script>
+
+</body>
+</html>

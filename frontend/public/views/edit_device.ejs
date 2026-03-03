@@ -1,0 +1,135 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <h2 class="fw-bold" style="color: var(--sidebar-bg);">
+            <i class="bi bi-pc-display text-warning me-2"></i>แก้ไขข้อมูลอุปกรณ์ <span id="headerDevId" class="text-primary"></span>
+        </h2>
+        <a href="/devices" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-arrow-left"></i> ยกเลิก / กลับ
+        </a>
+    </div>
+
+    <div id="loadingBox" class="text-center py-5">
+        <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem;"></div>
+        <h5 class="mt-3 text-muted">กำลังดึงข้อมูลเครื่อง...</h5>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3 mx-auto" id="editFormBox" style="max-width: 800px; display: none;">
+        <div class="card-body p-4 p-md-5">
+            <form id="editDeviceForm">
+                
+                <div class="mb-4 bg-light p-3 rounded border">
+                    <label class="form-label fw-bold text-primary"><i class="bi bi-person-check me-2"></i>ลูกค้าเจ้าของเครื่อง <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-lg" id="customerId" required>
+                        <option value="" disabled>⏳ กำลังโหลดรายชื่อลูกค้า...</option>
+                        </select>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label class="form-label fw-bold text-secondary">ยี่ห้อ (Brand) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-lg bg-light" id="brand" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary">รุ่น (Model) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-lg bg-light" id="model" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-secondary">ประเภท / สี / รายละเอียดเพิ่มเติม</label>
+                    <input type="text" class="form-control form-control-lg bg-light" id="type">
+                </div>
+
+                <hr class="mb-4">
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-warning fw-bold text-dark btn-lg px-5 shadow-sm">
+                        <i class="bi bi-save me-2"></i> บันทึกการแก้ไข
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ดึงตัวแปร ID อุปกรณ์ที่ส่งมาจาก Backend
+    const currentDeviceId = '<%= deviceId %>';
+
+    // ==========================================
+    // 1. ฟังก์ชันดึงข้อมูลเก่าและรายชื่อลูกค้ามาใส่ฟอร์ม
+    // ==========================================
+    async function loadDeviceData() {
+        try {
+            // ดึงข้อมูล 2 เส้นทางพร้อมกัน (ข้อมูลอุปกรณ์เก่า + รายชื่อลูกค้าทั้งหมด)
+            const [deviceRes, customersRes] = await Promise.all([
+                axios.get(`http://localhost:5000/api/devices/${currentDeviceId}`),
+                axios.get('http://localhost:5000/api/customers')
+            ]);
+
+            const device = deviceRes.data.data;
+            const customers = customersRes.data.data;
+
+            // --- 1. จัดการ Dropdown ลูกค้า ---
+            let options = '<option value="" disabled>-- คลิกลูกศรเพื่อเปลี่ยนลูกค้า --</option>';
+            customers.forEach(c => {
+                // ทริค: ถ้า ID ลูกค้าตรงกับเจ้าของเครื่อง ให้เติมคำว่า 'selected' เพื่อให้มันเลือกค่านั้นเป็นค่าเริ่มต้น
+                const isSelected = (c.customer_id === device.customer_id) ? 'selected' : '';
+                options += `<option value="${c.customer_id}" ${isSelected}>${c.first_name} ${c.last_name} (โทร: ${c.phone})</option>`;
+            });
+            document.getElementById('customerId').innerHTML = options;
+
+            // --- 2. นำข้อมูลอุปกรณ์ไปหยอดลงช่อง Input ---
+            const devIdFormatted = String(device.device_id).padStart(3, '0');
+            document.getElementById('headerDevId').innerText = `(DEV-${devIdFormatted})`;
+            
+            document.getElementById('brand').value = device.brand || '';
+            document.getElementById('model').value = device.model || '';
+            document.getElementById('type').value = device.type || ''; // ถ้าฐานข้อมูลใช้คำว่า color ก็เปลี่ยนเป็น device.color นะครับ
+
+            // ปิดตัวโหลด เปิดกล่องฟอร์ม
+            document.getElementById('loadingBox').style.display = 'none';
+            document.getElementById('editFormBox').style.display = 'block';
+
+        } catch (error) {
+            console.error("ดึงข้อมูลพลาด:", error);
+            document.getElementById('loadingBox').innerHTML = `<h5 class="text-danger mt-3">❌ ไม่พบข้อมูลอุปกรณ์ หรือระบบมีปัญหา</h5>`;
+        }
+    }
+
+    // ==========================================
+    // 2. ฟังก์ชันส่งข้อมูลใหม่ไปอัปเดต
+    // ==========================================
+    document.getElementById('editDeviceForm').addEventListener('submit', async function(e) {
+        e.preventDefault(); 
+
+        const data = {
+            customer_id: document.getElementById('customerId').value,
+            brand: document.getElementById('brand').value,
+            model: document.getElementById('model').value,
+            type: document.getElementById('type').value
+        };
+
+        try {
+            // ใช้ axios.put (แก้ไขข้อมูล)
+            const response = await axios.put(`http://localhost:5000/api/devices/${currentDeviceId}`, data);
+
+            if (response.data.success) {
+                alert('✅ ' + response.data.message);
+                window.location.href = '/devices'; // เด้งกลับไปหน้ารายการอุปกรณ์
+            }
+        } catch (error) {
+            console.error("ส่งข้อมูลแก้ไขพลาด:", error);
+            alert('❌ เกิดข้อผิดพลาด ไม่สามารถแก้ไขข้อมูลได้');
+        }
+    });
+
+    // ให้ดึงข้อมูลมาแสดงทันทีที่เปิดหน้าเว็บ
+    loadDeviceData();
+</script>
+
+</body>
+</html>

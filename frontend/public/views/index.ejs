@@ -1,0 +1,74 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <h2 class="fw-bold" style="color: var(--sidebar-bg);"><i class="bi bi-speedometer2"></i> ภาพรวมระบบ (Dashboard)</h2>
+        <div>
+            <span class="text-muted">ผู้ใช้งานปัจจุบัน: <span class="badge bg-primary px-3 py-2"><i class="bi bi-person-circle"></i> <%= user.email %></span></span>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 border-start border-primary border-4 h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs fw-bold text-primary text-uppercase mb-1">งานซ่อมทั้งหมด (ระบบ)</div>
+                    <div class="h2 mb-0 fw-bold text-gray-800" id="totalRepairs">...</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 border-start border-warning border-4 h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs fw-bold text-warning text-uppercase mb-1">รอดำเนินการ (Pending)</div>
+                    <div class="h2 mb-0 fw-bold text-gray-800" id="pendingRepairs">...</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 border-start border-success border-4 h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs fw-bold text-success text-uppercase mb-1">ซ่อมเสร็จสิ้น (Completed)</div>
+                    <div class="h2 mb-0 fw-bold text-gray-800" id="completedRepairs">...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 text-center py-5 mt-4" style="background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);">
+        <div class="card-body">
+            <i class="bi bi-rocket-takeoff text-primary" style="font-size: 4rem;"></i>
+            <h3 class="fw-bold mt-3">ระบบ ComRepair V2 พร้อมใช้งาน!</h3>
+            <p class="text-muted">ข้อมูลถูกแยกส่วนการทำงานเป็น Backend และ Frontend อย่างสมบูรณ์ ทำให้ระบบรวดเร็วและปลอดภัยมากยิ่งขึ้น</p>
+            <a href="/repairs" class="btn btn-primary rounded-pill px-4 py-2 mt-2">👉 ไปที่ตารางงานซ่อม</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function loadDashboardStats() {
+        try {
+            const response = await axios.get('http://localhost:5000/api/dashboard');
+            const stats = response.data.data;
+            
+            // นำตัวเลขที่ได้มาหยอดใส่กล่อง (ถ้าไม่มีค่า ให้โชว์เลข 0)
+            document.getElementById('totalRepairs').innerText = stats.totalRepairs || 0;
+            document.getElementById('pendingRepairs').innerText = stats.pendingRepairs || 0;
+            document.getElementById('completedRepairs').innerText = stats.completedRepairs || 0;
+            
+        } catch (error) {
+            console.error("ดึงข้อมูล Dashboard พลาด:", error);
+            // ถ้า Error ให้โชว์เครื่องหมายขีดค้างไว้
+            document.getElementById('totalRepairs').innerText = '-';
+            document.getElementById('pendingRepairs').innerText = '-';
+            document.getElementById('completedRepairs').innerText = '-';
+        }
+    }
+
+    // สั่งให้โหลดตัวเลขทันทีที่เปิดหน้าเว็บ
+    loadDashboardStats();
+</script>
+
+</body>
+</html>

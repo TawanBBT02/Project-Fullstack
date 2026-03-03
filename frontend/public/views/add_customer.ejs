@@ -1,0 +1,88 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <h2 class="fw-bold" style="color: var(--sidebar-bg);">
+            <i class="bi bi-person-plus-fill text-primary me-2"></i>เพิ่มลูกค้ารายใหม่
+        </h2>
+        <a href="/customers" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-arrow-left"></i> กลับไปหน้ารายชื่อ
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3 mx-auto" style="max-width: 800px;">
+        <div class="card-body p-4 p-md-5">
+            <form id="addCustomerForm">
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label class="form-label fw-bold text-secondary">ชื่อจริง <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-lg bg-light" id="firstName" placeholder="ระบุชื่อ" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary">นามสกุล <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-lg bg-light" id="lastName" placeholder="ระบุนามสกุล" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label class="form-label fw-bold text-secondary">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
+                        <input type="tel" class="form-control form-control-lg bg-light" id="phone" placeholder="08X-XXX-XXXX" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary">อีเมล</label>
+                        <input type="email" class="form-control form-control-lg bg-light" id="email" placeholder="example@email.com">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-secondary">ที่อยู่จัดส่ง / ติดต่อ</label>
+                    <textarea class="form-control bg-light" id="address" rows="3" placeholder="บ้านเลขที่, ถนน, ซอย, จังหวัด..."></textarea>
+                </div>
+
+                <hr class="mb-4">
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="reset" class="btn btn-light border btn-lg px-4">ล้างข้อมูล</button>
+                    <button type="submit" class="btn btn-primary fw-bold btn-lg px-5 shadow-sm">
+                        <i class="bi bi-save me-2"></i> บันทึกข้อมูลลูกค้า
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('addCustomerForm').addEventListener('submit', async function(e) {
+        // 1. สั่งระงับการโหลดหน้าเว็บใหม่เมื่อกดปุ่ม Submit (สำคัญมาก!)
+        e.preventDefault(); 
+
+        // 2. แพ็กของเตรียมส่ง
+        const data = {
+            first_name: document.getElementById('firstName').value,
+            last_name: document.getElementById('lastName').value,
+            phone: document.getElementById('phone').value,
+            email: document.getElementById('email').value,
+            address: document.getElementById('address').value
+        };
+
+        try {
+            // 3. ใช้ Axios ส่งแบบ POST ไปที่หลังบ้าน
+            const response = await axios.post('http://localhost:5000/api/customers', data);
+
+            // 4. ถ้าหลังบ้านบอกว่าสำเร็จ
+            if (response.data.success) {
+                alert('✅ บันทึกข้อมูลลูกค้าใหม่เรียบร้อยแล้ว!');
+                window.location.href = '/customers'; // เด้งพาไปหน้าตารางลูกค้าทันที
+            }
+        } catch (error) {
+            console.error("ส่งข้อมูลพลาด:", error);
+            alert('❌ เกิดข้อผิดพลาด ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง');
+        }
+    });
+</script>
+
+</body>
+</html>

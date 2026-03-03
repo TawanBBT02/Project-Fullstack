@@ -1,0 +1,87 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
+        <h2 class="h4 fw-bold text-dark"><i class="bi bi-person-badge-fill me-2 text-primary"></i>เพิ่มข้อมูลช่างเทคนิคใหม่</h2>
+        <a href="/technicians" class="btn btn-outline-secondary rounded-pill px-3">
+            <i class="bi bi-arrow-left"></i> ย้อนกลับ
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-body p-4">
+                    <form id="addTechForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label fw-bold">ชื่อ <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control shadow-none" id="first_name" required placeholder="ชื่อช่าง">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label fw-bold">นามสกุล <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control shadow-none" id="last_name" required placeholder="นามสกุล">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label fw-bold">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control shadow-none" id="phone" required placeholder="08x-xxx-xxxx">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label fw-bold">อีเมล</label>
+                                <input type="email" class="form-control shadow-none" id="email" placeholder="name@example.com">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="hire_date" class="form-label fw-bold">วันที่เริ่มงาน <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control shadow-none" id="hire_date" required>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                            <button type="reset" class="btn btn-light rounded-pill px-4 me-md-2">ล้างข้อมูล</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm">
+                                <i class="bi bi-save me-1"></i> บันทึกข้อมูลช่าง
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+    document.getElementById('addTechForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // 🌟 ดึงข้อมูลจากฟอร์ม (เปลี่ยนจาก specialty เป็น email)
+        const techData = {
+            first_name: document.getElementById('first_name').value,
+            last_name: document.getElementById('last_name').value,
+            phone: document.getElementById('phone').value,
+            email: document.getElementById('email').value, 
+            hire_date: document.getElementById('hire_date').value
+        };
+
+        try {
+            const response = await axios.post('http://localhost:5000/api/technicians', techData);
+            
+            if (response.data.success) {
+                alert('✅ ' + response.data.message);
+                window.location.href = '/technicians';
+            }
+        } catch (error) {
+            console.error("บันทึกข้อมูลพลาด:", error);
+            alert('❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง');
+        }
+    });
+</script>
+
+</body>
+</html>

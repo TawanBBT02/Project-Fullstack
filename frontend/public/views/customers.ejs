@@ -1,0 +1,137 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <h2 class="fw-bold" style="color: var(--sidebar-bg);">
+            <i class="bi bi-people-fill text-primary me-2"></i>รายชื่อลูกค้า
+        </h2>
+        <div>
+            <button class="btn btn-outline-secondary me-2" onclick="loadCustomers()">
+                <i class="bi bi-arrow-clockwise"></i> รีเฟรช
+            </button>
+            <a href="/add_customer" class="btn btn-primary fw-bold shadow-sm">
+                <i class="bi bi-person-plus-fill"></i> เพิ่มลูกค้าใหม่
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">รหัสลูกค้า</th>
+                            <th>ชื่อ - นามสกุล</th>
+                            <th>เบอร์โทรศัพท์</th>
+                            <th>อีเมล</th>
+                            <th>ที่อยู่</th>
+                            <th class="text-end pe-4">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customerTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                กำลังโหลดข้อมูลลูกค้า...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function loadCustomers() {
+        try {
+            const response = await axios.get('http://localhost:5000/api/customers');
+            const customers = response.data.data;
+            let html = '';
+
+            if (customers.length === 0) {
+                html = `
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-person-x fs-1 d-block mb-2"></i>
+                            ยังไม่มีข้อมูลลูกค้าในระบบ
+                        </td>
+                    </tr>
+                `;
+            } else {
+                customers.forEach(c => {
+                    // จัดการ Format รหัสลูกค้า (CUST-001)
+                    const custIdFormatted = String(c.customer_id).padStart(3, '0');
+
+                    html += `
+                        <tr>
+                            <td class="ps-4 fw-bold text-secondary">CUST-${custIdFormatted}</td>
+                            <td>
+                                <div class="fw-bold text-dark">${c.first_name || ''} ${c.last_name || ''}</div>
+                            </td>
+                            <td>
+                                <a href="tel:${c.phone}" class="text-decoration-none text-primary">
+                                    <i class="bi bi-telephone-fill small me-1"></i>${c.phone || '-'}
+                                </a>
+                            </td>
+                            <td>${c.email || '-'}</td>
+                            <td><span class="text-truncate d-inline-block" style="max-width: 200px;">${c.address || '-'}</span></td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group shadow-sm">
+                                    <a href="/edit_customer/${c.customer_id}" class="btn btn-sm btn-light text-warning border" title="แก้ไข">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <form action="/delete_customer/${c.customer_id}" method="POST" class="d-inline" onsubmit="return confirm('⚠️ ยืนยันการลบข้อมูลลูกค้า CUST-${custIdFormatted} ใช่หรือไม่?');">
+                                        <button type="button" class="btn btn-sm btn-light text-danger border" title="ลบ" onclick="deleteCustomer(${c.customer_id})">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('customerTableBody').innerHTML = html;
+
+        } catch (error) {
+            console.error("ดึงข้อมูลลูกค้าพลาด:", error);
+            document.getElementById('customerTableBody').innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-danger fw-bold">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>ไม่สามารถเชื่อมต่อฐานข้อมูลได้
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    // สั่งให้ทำงานทันทีเมื่อเปิดหน้าเว็บ
+    loadCustomers();
+
+// ==========================================
+// 🗑️ ฟังก์ชันลบลูกค้า
+// ==========================================
+async function deleteCustomer(id) {
+    // โชว์หน้าต่างยืนยันก่อนลบ ป้องกันมือลั่น!
+    if (confirm('⚠️ คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลลูกค้ารายนี้?')) {
+        try {
+            // สั่ง Axios ยิงคำสั่ง DELETE ไปที่หลังบ้าน
+            const response = await axios.delete(`http://localhost:5000/api/customers/${id}`);
+            
+            if (response.data.success) {
+                alert('✅ ' + response.data.message);
+                loadCustomers(); // 🌟 รีเฟรชตารางใหม่ทันทีโดยไม่ต้องโหลดหน้าเว็บใหม่
+            }
+        } catch (error) {
+            console.error("ลบข้อมูลพลาด:", error);
+            alert('❌ ไม่สามารถลบได้ (ลูกค้ารายนี้อาจมีประวัติงานซ่อมค้างอยู่ในระบบ)');
+        }
+    }
+}
+</script>
+</body>
+</html>

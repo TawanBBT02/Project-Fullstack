@@ -1,0 +1,120 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <h2 class="fw-bold text-dark">
+            <i class="bi bi-pc-display text-primary me-2"></i>เพิ่มข้อมูลอุปกรณ์ใหม่
+        </h2>
+        <a href="/devices" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-arrow-left"></i> กลับหน้ารายการ
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3" style="max-width: 800px; margin: 0 auto;">
+        <div class="card-body p-5">
+            <form id="addDeviceForm">
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-primary"><i class="bi bi-person-fill me-2"></i>เลือกลูกค้าเจ้าของเครื่อง <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-lg" id="customer_id" required>
+                        <option value="" disabled selected>-- ⏳ กำลังโหลดรายชื่อลูกค้า --</option>
+                    </select>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-12 mb-2">
+                        <label class="form-label fw-bold text-secondary">ประเภทอุปกรณ์ (Device Type) <span class="text-danger">*</span></label>
+                        <select class="form-select" id="device_type" required>
+                            <option value="" disabled selected>-- คลิกเพื่อเลือกประเภท --</option>
+                            <option value="PC Desktop">🖥️ PC Desktop (คอมพิวเตอร์ตั้งโต๊ะ)</option>
+                            <option value="Notebook">💻 Notebook / Laptop (โน้ตบุ๊ก)</option>
+                            <option value="MacBook">🍎 MacBook</option>
+                            <option value="Printer">🖨️ Printer (เครื่องพิมพ์)</option>
+                            <option value="Phone">📱 Phone / Tablet (มือถือ/แท็บเล็ต)</option>
+                            <option value="อื่นๆ">อื่นๆ</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary">ยี่ห้อ (Brand) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="brand" placeholder="เช่น ASUS, Acer, Apple..." required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary">รุ่น (Model) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="model" placeholder="เช่น TUF Gaming, Swift 3..." required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-secondary">รายละเอียดเพิ่มเติม / สี</label>
+                    <input type="text" class="form-control" id="type_detail" placeholder="เช่น สีดำ, มีรอยร้าวที่มุมจอ, ไม่มีสายชาร์จมาด้วย...">
+                </div>
+
+                <hr class="mb-4">
+
+                <div class="text-end">
+                    <button type="reset" class="btn btn-light border px-4 me-2">ล้างข้อมูล</button>
+                    <button type="submit" class="btn btn-primary fw-bold px-5 shadow-sm">
+                        <i class="bi bi-save me-2"></i>บันทึกข้อมูลอุปกรณ์
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+    // 1. โหลดรายชื่อลูกค้ามาใส่ Dropdown
+    async function loadCustomersForDropdown() {
+        try {
+            const response = await axios.get('http://localhost:5000/api/customers');
+            const customers = response.data.data;
+            let options = '<option value="" disabled selected>-- คลิกลูกศรเพื่อเลือกลูกค้า --</option>';
+            
+            customers.forEach(c => {
+                options += `<option value="${c.customer_id}">${c.first_name} ${c.last_name || ''} (${c.phone || 'ไม่มีเบอร์'})</option>`;
+            });
+            
+            document.getElementById('customer_id').innerHTML = options;
+        } catch (error) {
+            console.error("โหลดรายชื่อลูกค้าพลาด:", error);
+            document.getElementById('customer_id').innerHTML = '<option value="" disabled>❌ ไม่สามารถโหลดรายชื่อลูกค้าได้</option>';
+        }
+    }
+
+    // 2. ฟังก์ชันกด Submit ฟอร์ม
+    document.getElementById('addDeviceForm').addEventListener('submit', async function(e) {
+        e.preventDefault(); // ป้องกันเว็บรีเฟรช
+
+        // ดึงค่าจากช่องต่างๆ
+        const deviceData = {
+            customer_id: document.getElementById('customer_id').value,
+            device_type: document.getElementById('device_type').value, // 🌟 ส่ง device_type ไปด้วย
+            brand: document.getElementById('brand').value,
+            model: document.getElementById('model').value,
+            type: document.getElementById('type_detail').value // ส่งรายละเอียดเพิ่มเติมไปในคอลัมน์ type
+        };
+
+        try {
+            // ยิง API ไปบันทึกข้อมูล
+            const response = await axios.post('http://localhost:5000/api/devices', deviceData);
+            
+            if (response.data.success) {
+                alert('✅ ' + response.data.message);
+                window.location.href = '/devices'; // บันทึกเสร็จเด้งกลับหน้ารายการ
+            }
+        } catch (error) {
+            console.error("บันทึกข้อมูลพลาด:", error);
+            alert('❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง');
+        }
+    });
+
+    // โหลดรายชื่อลูกค้าทันทีที่เปิดหน้า
+    loadCustomersForDropdown();
+</script>
+
+</body>
+</html>

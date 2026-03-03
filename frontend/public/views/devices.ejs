@@ -1,0 +1,128 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <h2 class="fw-bold" style="color: var(--sidebar-bg);">
+            <i class="bi bi-pc-display text-primary me-2"></i>จัดการข้อมูลอุปกรณ์
+        </h2>
+        <div>
+            <button class="btn btn-outline-secondary me-2" onclick="loadDevices()">
+                <i class="bi bi-arrow-clockwise"></i> รีเฟรช
+            </button>
+            <a href="/add_device" class="btn btn-primary fw-bold shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> เพิ่มอุปกรณ์ใหม่
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">รหัสอุปกรณ์</th>
+                            <th>ประเภท</th> <th>ยี่ห้อ / รุ่น</th>
+                            <th>ลูกค้าเจ้าของเครื่อง</th>
+                            <th class="text-end pe-4">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deviceTableBody">
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                กำลังโหลดข้อมูลอุปกรณ์...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+    async function loadDevices() {
+        try {
+            const response = await axios.get('http://localhost:5000/api/devices');
+            const devices = response.data.data;
+            let html = '';
+
+            if (devices.length === 0) {
+                html = `<tr><td colspan="5" class="text-center py-5 text-muted">ยังไม่มีข้อมูลอุปกรณ์ในระบบ</td></tr>`;
+            } else {
+                devices.forEach(dev => {
+                    const devIdFormatted = String(dev.device_id).padStart(3, '0');
+                    
+                    const customerName = (dev.first_name || dev.last_name) 
+                        ? `${dev.first_name || ''} ${dev.last_name || ''}` 
+                        : '<span class="text-danger fst-italic">ไม่ระบุ (ลูกค้าถูกลบ)</span>';
+
+                    // ไอคอนอัจฉริยะตามประเภทอุปกรณ์
+                    let typeIcon = 'bi-device-hdd';
+                    const devType = (dev.device_type || '').toLowerCase();
+                    
+                    if (devType.includes('notebook') || devType.includes('laptop') || devType.includes('โน้ตบุ๊ก') || devType.includes('macbook')) {
+                        typeIcon = 'bi-laptop';
+                    } else if (devType.includes('pc') || devType.includes('desktop') || devType.includes('คอมตั้งโต๊ะ')) {
+                        typeIcon = 'bi-pc-display';
+                    } else if (devType.includes('printer') || devType.includes('ปริ้นเตอร์') || devType.includes('เครื่องพิมพ์')) {
+                        typeIcon = 'bi-printer';
+                    } else if (devType.includes('phone') || devType.includes('mobile') || devType.includes('โทรศัพท์')) {
+                        typeIcon = 'bi-phone';
+                    }
+
+                    html += `
+                        <tr>
+                            <td class="ps-4 fw-bold text-secondary">DEV-${devIdFormatted}</td>
+                            <td>
+                                <span class="badge bg-light text-dark border rounded-pill px-3 shadow-sm">
+                                    <i class="bi ${typeIcon} text-primary me-1"></i> ${dev.device_type || 'ไม่ระบุ'}
+                                </span>
+                            </td>
+                            <td class="fw-bold">${dev.brand || '-'} ${dev.model || ''}</td>
+                            <td><i class="bi bi-person-fill text-secondary me-1"></i> ${customerName}</td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group shadow-sm">
+                                    <a href="/edit_device/${dev.device_id}" class="btn btn-sm btn-light text-warning border" title="แก้ไข">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-light text-danger border" title="ลบ" onclick="deleteDevice(${dev.device_id})">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('deviceTableBody').innerHTML = html;
+
+        } catch (error) {
+            console.error("ดึงข้อมูลพลาด:", error);
+            document.getElementById('deviceTableBody').innerHTML = `
+                <tr><td colspan="5" class="text-center py-4 text-danger">ไม่สามารถเชื่อมต่อฐานข้อมูลได้</td></tr>
+            `;
+        }
+    }
+
+    async function deleteDevice(id) {
+        if (confirm('⚠️ ยืนยันการลบข้อมูลอุปกรณ์? (ระวัง: งานซ่อมที่เกี่ยวกับเครื่องนี้อาจได้รับผลกระทบ)')) {
+            try {
+                const response = await axios.delete(`http://localhost:5000/api/devices/${id}`);
+                if (response.data.success) {
+                    loadDevices(); 
+                }
+            } catch (error) {
+                console.error("ลบอุปกรณ์พลาด:", error);
+                alert('❌ ไม่สามารถลบได้ กรุณาลองใหม่อีกครั้ง');
+            }
+        }
+    }
+
+    loadDevices();
+</script>
