@@ -3,62 +3,63 @@
 
 <div class="container-fluid px-4 py-4">
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
-        <h2 class="fw-bold" style="color: var(--sidebar-bg);">
-            <i class="bi bi-tools text-warning me-2"></i>อัปเดตสถานะงานซ่อม <span id="headerRepId" class="text-primary"></span>
+        <h2 class="fw-bold text-dark">
+            <i class="bi bi-tools text-warning me-2"></i>อัปเดตสถานะงานซ่อม <span id="displayRepairId" class="text-primary"></span>
         </h2>
         <a href="/repairs" class="btn btn-outline-secondary shadow-sm">
-            <i class="bi bi-arrow-left"></i> ยกเลิก / กลับ
+            <i class="bi bi-arrow-left"></i> กลับหน้ารายการ
         </a>
     </div>
 
-    <div id="loadingBox" class="text-center py-5">
-        <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem;"></div>
-        <h5 class="mt-3 text-muted">กำลังดึงข้อมูลงานซ่อม...</h5>
+    <div id="errorBox" class="text-center py-5" style="display: none;">
+        <h4 class="text-danger fw-bold"><i class="bi bi-x-circle-fill me-2"></i>ไม่พบข้อมูลงานซ่อม หรือระบบมีปัญหา</h4>
+        <p class="text-muted" id="errorMessage"></p>
+        <a href="/repairs" class="btn btn-outline-secondary mt-3">กลับหน้ารายการ</a>
     </div>
 
-    <div class="card shadow-sm border-0 rounded-3 mx-auto" id="editFormBox" style="max-width: 800px; display: none;">
-        <div class="card-body p-4 p-md-5">
+    <div class="card shadow-sm border-0 rounded-3" style="max-width: 800px; margin: 0 auto;" id="formCard">
+        <div class="card-body p-5">
             <form id="editRepairForm">
                 
-                <div class="mb-4 bg-light p-3 rounded border">
-                    <label class="form-label fw-bold text-primary"><i class="bi bi-pc-display me-2"></i>อุปกรณ์ที่ส่งซ่อม <span class="text-danger">*</span></label>
-                    <select class="form-select form-select-lg" id="deviceId" required>
-                        <option value="" disabled>⏳ กำลังโหลดรายการอุปกรณ์...</option>
-                        </select>
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-secondary">อุปกรณ์ที่ส่งซ่อม <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-lg" id="device_id" required>
+                        <option value="">-- กำลังโหลดข้อมูล --</option>
+                    </select>
                 </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6 mb-3 mb-md-0">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
                         <label class="form-label fw-bold text-secondary">วันที่รับเครื่อง <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control form-control-lg bg-light" id="receiveDate" required>
+                        <input type="date" class="form-control" id="receive_date" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold text-secondary">ช่างผู้รับผิดชอบ <span class="text-danger">*</span></label>
-                        <select class="form-select form-select-lg bg-light" id="technicianId" required>
-                            <option value="" disabled>⏳ กำลังโหลดรายชื่อช่าง...</option>
-                            </select>
+                        <label class="form-label fw-bold text-secondary">ช่างรับผิดชอบ <span class="text-danger">*</span></label>
+                        <select class="form-select" id="technician_id" required>
+                            <option value="">-- กำลังโหลดข้อมูล --</option>
+                        </select>
                     </div>
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label fw-bold text-secondary">อาการเสีย / รายละเอียดที่ลูกค้าแจ้ง <span class="text-danger">*</span></label>
-                    <textarea class="form-control bg-light" id="description" rows="4" required></textarea>
+                    <textarea class="form-control" id="problem_type" rows="3" required></textarea>
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label fw-bold text-secondary">อัปเดตสถานะงานซ่อม <span class="text-danger">*</span></label>
-                    <select class="form-select form-select-lg bg-light" id="status" required>
+                    <select class="form-select form-select-lg text-primary fw-bold bg-light" id="status" required>
                         <option value="Pending">⏳ รอดำเนินการ (Pending)</option>
-                        <option value="In Progress">🛠️ กำลังซ่อม (In Progress)</option>
+                        <option value="In Progress">🔧 กำลังซ่อม (In Progress)</option>
                         <option value="Completed">✅ ซ่อมเสร็จสิ้น (Completed)</option>
                     </select>
                 </div>
 
                 <hr class="mb-4">
 
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <button type="submit" class="btn btn-warning fw-bold text-dark btn-lg px-5 shadow-sm">
-                        <i class="bi bi-save me-2"></i> บันทึกการอัปเดต
+                <div class="text-end">
+                    <button type="submit" class="btn btn-warning fw-bold px-5 shadow-sm">
+                        <i class="bi bi-save me-2"></i>บันทึกการอัปเดต
                     </button>
                 </div>
             </form>
@@ -66,94 +67,84 @@
     </div>
 </div>
 
-<script>
-    // ดึงตัวแปร ID งานซ่อมที่ส่งมาจาก Backend
-    const currentRepairId = '<%= repairId %>';
+<%- include('partials/footer') %>
 
-    // ==========================================
-    // 1. ฟังก์ชันดึงข้อมูลเก่าและตัวเลือกต่างๆ มาใส่ฟอร์ม
-    // ==========================================
-    async function loadRepairData() {
+<script>
+    // 🌟 ดึง ID จาก URL ให้แม่นยำ
+    const urlParts = window.location.pathname.split('/');
+    const currentRepairId = urlParts[urlParts.length - 1];
+
+    async function loadFormData() {
         try {
-            // ดึงข้อมูล 3 เส้นทางพร้อมกัน! (ข้อมูลซ่อมเดิม + อุปกรณ์ทั้งหมด + ช่างทั้งหมด)
-            const [repairRes, devicesRes, techsRes] = await Promise.all([
-                axios.get(`http://localhost:5000/api/repairs/${currentRepairId}`),
+            // 1. โหลดข้อมูลที่เกี่ยวข้องทั้งหมด
+            const [devicesRes, techsRes, repairRes] = await Promise.all([
                 axios.get('http://localhost:5000/api/devices'),
-                axios.get('http://localhost:5000/api/technicians')
+                axios.get('http://localhost:5000/api/technicians'),
+                axios.get(`http://localhost:5000/api/repairs/${currentRepairId}`)
             ]);
 
-            const repair = repairRes.data.data;
-            const devices = devicesRes.data.data;
-            const techs = techsRes.data.data;
-
-            // --- 1. จัดการ Dropdown อุปกรณ์ ---
-            let devOptions = '<option value="" disabled>-- คลิกลูกศรเพื่อเปลี่ยนอุปกรณ์ --</option>';
-            devices.forEach(d => {
-                const devId = String(d.device_id).padStart(3, '0');
-                // เลือกล็อกตัวเลือกเครื่องเดิม
-                const isSelected = (d.device_id === repair.device_id) ? 'selected' : '';
-                devOptions += `<option value="${d.device_id}" ${isSelected}>DEV-${devId} | ${d.brand || ''} ${d.model || ''} (ลูกค้า: ${d.first_name || 'ไม่ระบุ'})</option>`;
+            // เอาข้อมูลมายัดใส่ Dropdown อุปกรณ์
+            let devOptions = '<option value="">-- เลือกอุปกรณ์ --</option>';
+            devicesRes.data.data.forEach(d => {
+                devOptions += `<option value="${d.device_id}">DEV-${String(d.device_id).padStart(3, '0')} | ${d.brand} ${d.model}</option>`;
             });
-            document.getElementById('deviceId').innerHTML = devOptions;
+            document.getElementById('device_id').innerHTML = devOptions;
 
-            // --- 2. จัดการ Dropdown ช่าง ---
-            let techOptions = '<option value="" disabled>-- คลิกลูกศรเพื่อเปลี่ยนช่าง --</option>';
-            techs.forEach(t => {
-                const techId = String(t.technician_id).padStart(3, '0');
-                // เลือกล็อกตัวเลือกช่างคนเดิม
-                const isSelected = (t.technician_id === repair.technician_id) ? 'selected' : '';
-                techOptions += `<option value="${t.technician_id}" ${isSelected}>TECH-${techId} | ช่าง${t.first_name || ''}</option>`;
+            // เอาข้อมูลมายัดใส่ Dropdown ช่าง
+            let techOptions = '<option value="">-- เลือกช่าง --</option>';
+            techsRes.data.data.forEach(t => {
+                techOptions += `<option value="${t.technician_id}">ช่าง${t.first_name} ${t.last_name || ''}</option>`;
             });
-            document.getElementById('technicianId').innerHTML = techOptions;
+            document.getElementById('technician_id').innerHTML = techOptions;
 
-            // --- 3. นำข้อมูลงานซ่อมไปหยอดลงช่อง Input ---
-            const repIdFormatted = String(repair.repair_id).padStart(3, '0');
-            document.getElementById('headerRepId').innerText = `(REP-${repIdFormatted})`;
+            // 2. นำข้อมูลงานซ่อมเดิม มากรอกลงในฟอร์ม
+            const r = repairRes.data.data;
+            document.getElementById('displayRepairId').innerText = `(REP-${String(r.repair_id).padStart(3, '0')})`;
             
-            document.getElementById('receiveDate').value = repair.receive_date || '';
-            document.getElementById('description').value = repair.description || '';
-            document.getElementById('status').value = repair.status || 'Pending';
-
-            // ปิดตัวโหลด เปิดกล่องฟอร์ม
-            document.getElementById('loadingBox').style.display = 'none';
-            document.getElementById('editFormBox').style.display = 'block';
+            document.getElementById('device_id').value = r.device_id;
+            document.getElementById('technician_id').value = r.technician_id;
+            document.getElementById('receive_date').value = r.receive_date;
+            
+            // 🌟 ซิงค์กันเรียบร้อย ข้อมูลลงกล่องแน่นอน
+            document.getElementById('problem_type').value = r.problem_type || r.description || ''; 
+            document.getElementById('status').value = r.status;
 
         } catch (error) {
-            console.error("ดึงข้อมูลพลาด:", error);
-            document.getElementById('loadingBox').innerHTML = `<h5 class="text-danger mt-3">❌ ไม่พบข้อมูลงานซ่อม หรือระบบมีปัญหา</h5>`;
+            console.error("โหลดข้อมูลพลาด:", error);
+            // ถ้าพังจริงๆ ถึงจะซ่อนฟอร์ม แล้วโชว์กล่อง Error
+            document.getElementById('formCard').style.display = 'none';
+            document.getElementById('errorBox').style.display = 'block';
+            document.getElementById('errorMessage').innerText = "ข้อผิดพลาด: " + error.message;
         }
     }
 
-    // ==========================================
-    // 2. ฟังก์ชันส่งข้อมูลใหม่ไปอัปเดต
-    // ==========================================
+    // 3. เมื่อกดอัปเดต
     document.getElementById('editRepairForm').addEventListener('submit', async function(e) {
-        e.preventDefault(); 
+        e.preventDefault();
 
-        const data = {
-            device_id: document.getElementById('deviceId').value,
-            technician_id: document.getElementById('technicianId').value,
-            receive_date: document.getElementById('receiveDate').value,
-            description: document.getElementById('description').value,
+        const updateData = {
+            device_id: document.getElementById('device_id').value,
+            technician_id: document.getElementById('technician_id').value,
+            receive_date: document.getElementById('receive_date').value,
+            description: document.getElementById('problem_type').value, // ส่งข้อมูลให้หลังบ้าน
             status: document.getElementById('status').value
         };
 
         try {
-            // ใช้ axios.put (แก้ไขข้อมูล) ไปที่หลังบ้าน
-            const response = await axios.put(`http://localhost:5000/api/repairs/${currentRepairId}`, data);
-
+            const response = await axios.put(`http://localhost:5000/api/repairs/${currentRepairId}`, updateData);
+            
             if (response.data.success) {
                 alert('✅ ' + response.data.message);
-                window.location.href = '/repairs'; // เด้งกลับไปหน้ารายการงานซ่อม
+                window.location.href = '/repairs';
             }
         } catch (error) {
-            console.error("ส่งข้อมูลแก้ไขพลาด:", error);
-            alert('❌ เกิดข้อผิดพลาด ไม่สามารถอัปเดตข้อมูลได้');
+            console.error("อัปเดตพลาด:", error);
+            alert('❌ อัปเดตข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
         }
     });
 
-    // ให้ดึงข้อมูลมาแสดงทันทีที่เปิดหน้าเว็บ
-    loadRepairData();
+    // เริ่มโหลดข้อมูลทันที
+    loadFormData();
 </script>
 
 </body>

@@ -3,15 +3,15 @@
 
 <div class="container-fluid px-4 py-4">
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
-        <h2 class="fw-bold" style="color: var(--sidebar-bg);">
-            <i class="bi bi-person-workspace text-primary me-2"></i>รายชื่อช่างซ่อม
+        <h2 class="fw-bold text-dark">
+            <i class="bi bi-person-badge-fill text-primary me-2"></i>รายชื่อช่างซ่อม
         </h2>
         <div>
             <button class="btn btn-outline-secondary me-2" onclick="loadTechnicians()">
                 <i class="bi bi-arrow-clockwise"></i> รีเฟรช
             </button>
-            <a href="/add_technician" class="btn btn-primary fw-bold shadow-sm">
-                <i class="bi bi-person-plus-fill"></i> เพิ่มช่างใหม่
+            <a href="/add_technician" class="btn btn-primary fw-bold shadow-sm rounded-pill px-4">
+                <i class="bi bi-person-plus-fill me-1"></i> เพิ่มช่างใหม่
             </a>
         </div>
     </div>
@@ -20,19 +20,17 @@
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                    <thead class="table-light text-muted">
                         <tr>
                             <th class="ps-4">รหัสช่าง</th>
                             <th>ชื่อ - นามสกุล</th>
                             <th>เบอร์โทรศัพท์</th>
-                            <th>อีเมล</th>
-                            <th>ความเชี่ยวชาญ (ถ้ามี)</th>
-                            <th class="text-end pe-4">จัดการ</th>
+                            <th>อีเมล</th> <th class="text-end pe-4">จัดการ</th>
                         </tr>
                     </thead>
                     <tbody id="techTableBody">
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">
+                            <td colspan="5" class="text-center py-5 text-muted">
                                 <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
                                 กำลังโหลดข้อมูลช่างซ่อม...
                             </td>
@@ -44,97 +42,61 @@
     </div>
 </div>
 
+<%- include('partials/footer') %>
+
 <script>
     async function loadTechnicians() {
         try {
             const response = await axios.get('http://localhost:5000/api/technicians');
-            const technicians = response.data.data;
+            const techs = response.data.data;
             let html = '';
 
-            if (technicians.length === 0) {
-                html = `
-                    <tr>
-                        <td colspan="6" class="text-center py-5 text-muted">
-                            <i class="bi bi-tools fs-1 d-block mb-2"></i>
-                            ยังไม่มีข้อมูลช่างซ่อมในระบบ
-                        </td>
-                    </tr>
-                `;
+            if (techs.length === 0) {
+                html = `<tr><td colspan="5" class="text-center py-5 text-muted">ยังไม่มีข้อมูลช่างซ่อมในระบบ</td></tr>`;
             } else {
-                technicians.forEach(t => {
-                    // จัดการ Format รหัสช่าง (TECH-001)
+                techs.forEach(t => {
                     const techIdFormatted = String(t.technician_id).padStart(3, '0');
-
                     html += `
                         <tr>
                             <td class="ps-4 fw-bold text-secondary">TECH-${techIdFormatted}</td>
-                            <td>
-                                <div class="fw-bold text-dark">
-                                    <i class="bi bi-person-badge text-primary me-1"></i>
-                                    ${t.first_name || ''} ${t.last_name || ''}
-                                </div>
-                            </td>
-                            <td>
-                                <a href="tel:${t.phone}" class="text-decoration-none text-primary">
-                                    <i class="bi bi-telephone-fill small me-1"></i>${t.phone || '-'}
-                                </a>
-                            </td>
-                            <td>${t.email || '-'}</td>
-                            <td>
-                                <span class="badge bg-info text-dark">${t.specialty || 'ช่างซ่อมทั่วไป'}</span>
-                            </td>
-                            <td class="text-end pe-4">
+                            <td class="fw-bold"><i class="bi bi-person-badge text-primary me-2"></i>${t.first_name} ${t.last_name || ''}</td>
+                            <td><i class="bi bi-telephone-fill text-muted me-1"></i> ${t.phone || '-'}</td>
+                            <td>${t.email || '-'}</td> <td class="text-end pe-4">
                                 <div class="btn-group shadow-sm">
                                     <a href="/edit_technician/${t.technician_id}" class="btn btn-sm btn-light text-warning border" title="แก้ไข">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
-                                    <form action="/delete_technician/${t.technician_id}" method="POST" class="d-inline" onsubmit="return confirm('⚠️ ยืนยันการลบข้อมูลช่าง TECH-${techIdFormatted} ใช่หรือไม่?');">
-                                        <button type="button" class="btn btn-sm btn-light text-danger border" title="ลบ" onclick="deleteTechnician(${t.technician_id})">
-                                            <i class="bi bi-trash3-fill"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn btn-sm btn-light text-danger border" title="ลบ" onclick="deleteTechnician(${t.technician_id})">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
                     `;
                 });
             }
-
             document.getElementById('techTableBody').innerHTML = html;
-
         } catch (error) {
-            console.error("ดึงข้อมูลช่างซ่อมพลาด:", error);
+            console.error("ดึงข้อมูลพลาด:", error);
             document.getElementById('techTableBody').innerHTML = `
-                <tr>
-                    <td colspan="6" class="text-center py-4 text-danger fw-bold">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>ไม่สามารถเชื่อมต่อฐานข้อมูลได้
-                    </td>
-                </tr>
+                <tr><td colspan="5" class="text-center py-4 text-danger">ไม่สามารถเชื่อมต่อฐานข้อมูลได้</td></tr>
             `;
         }
     }
 
-    // สั่งให้ทำงานทันทีเมื่อเปิดหน้าเว็บ
-    loadTechnicians();
-
-// ==========================================
-// 🗑️ ฟังก์ชันลบช่างซ่อม
-// ==========================================
-async function deleteTechnician(id) {
-    if (confirm('⚠️ แน่ใจหรือไม่ว่าต้องการลบรายชื่อช่างคนนี้ออกจากระบบ?')) {
-        try {
-            const response = await axios.delete(`http://localhost:5000/api/technicians/${id}`);
-            if (response.data.success) {
-                alert('✅ ' + response.data.message);
-                loadTechnicians(); // โหลดตารางใหม่
+    async function deleteTechnician(id) {
+        if (confirm('⚠️ ยืนยันการลบข้อมูลช่างรายนี้ออกจากระบบ?')) {
+            try {
+                const response = await axios.delete(`http://localhost:5000/api/technicians/${id}`);
+                if (response.data.success) {
+                    loadTechnicians();
+                }
+            } catch (error) {
+                console.error("ลบช่างพลาด:", error);
+                alert('❌ ไม่สามารถลบได้ (ช่างรายนี้อาจมีงานซ่อมค้างอยู่)');
             }
-        } catch (error) {
-            console.error("ลบช่างพลาด:", error);
-            alert('❌ ไม่สามารถลบได้ (ช่างคนนี้อาจมีงานซ่อมค้างอยู่ในระบบ)');
         }
     }
-}ห
-</script>
 
-</body>
-</html>
+    loadTechnicians();
+</script>

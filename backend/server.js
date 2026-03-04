@@ -84,6 +84,40 @@ app.post('/api/login', (req, res) => {
 });
 
 // ==========================================
+// ➕ API สมัครสมาชิกใหม่ (แบบมี Email)
+// ==========================================
+app.post('/api/signup', (req, res) => {
+    // 🌟 รับค่า email มาจากหน้าเว็บด้วย
+    const { username, email, password } = req.body;
+
+    // 1. เช็คก่อนว่ามี Username หรือ Email นี้ในระบบหรือยัง?
+    const checkSql = `SELECT * FROM Users WHERE username = ? OR email = ?`;
+    db.get(checkSql, [username, email], (err, row) => {
+        if (err) return res.status(500).json({ success: false, message: "ฐานข้อมูลมีปัญหา" });
+        
+        if (row) {
+            // ดักทีละเคสว่าอะไรซ้ำ
+            if (row.username === username) {
+                return res.status(400).json({ success: false, message: "ชื่อผู้ใช้งาน (Username) นี้มีคนใช้แล้ว!" });
+            }
+            if (row.email === email) {
+                return res.status(400).json({ success: false, message: "อีเมล (Email) นี้ถูกใช้สมัครไปแล้ว!" });
+            }
+        }
+
+        // 2. ถ้ายังไม่มี ให้บันทึกลงฐานข้อมูล (🌟 เพิ่ม email เข้าไปในคำสั่ง SQL)
+        const insertSql = `INSERT INTO Users (username, email, password) VALUES (?, ?, ?)`;
+        db.run(insertSql, [username, email, password], function(err) {
+            if (err) {
+                console.error("Signup Error:", err.message);
+                return res.status(500).json({ success: false, message: "สมัครสมาชิกไม่สำเร็จ" });
+            }
+            res.json({ success: true, message: "สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ" });
+        });
+    });
+});
+
+// ==========================================
 // 💻 API สำหรับดึงข้อมูลอุปกรณ์ทั้งหมด (พร้อมชื่อเจ้าของ)
 // ==========================================
 app.get('/api/devices', (req, res) => {
@@ -109,18 +143,19 @@ app.get('/api/devices', (req, res) => {
 // ➕ API สำหรับเพิ่มข้อมูลอุปกรณ์ใหม่
 // ==========================================
 app.post('/api/devices', (req, res) => {
-    // 1. รับข้อมูลอุปกรณ์ที่หน้าบ้านส่งมา
-    const { customer_id, brand, model, type } = req.body;
-
-    // 2. สั่ง SQL เอาข้อมูลยัดลงตาราง Devices
-    const sql = `INSERT INTO Devices (customer_id, brand, model, type) VALUES (?, ?, ?, ?)`;
+    // หน้าเว็บยังส่ง type มาเหมือนเดิมได้ ไม่เป็นไร
+    const { customer_id, device_type, brand, model, type } = req.body;
     
-    db.run(sql, [customer_id, brand, model, type], function(err) {
+    // 🌟 เอาคำว่า type ออกจากคำสั่ง SQL เพราะฐานข้อมูลเราไม่มีคอลัมน์นี้
+    const sql = `INSERT INTO Devices (customer_id, device_type, brand, model) VALUES (?, ?, ?, ?)`;
+    
+    // 🌟 ส่งค่าไปบันทึกแค่ 4 ตัว ให้ตรงกับเครื่องหมาย ?
+    db.run(sql, [customer_id, device_type, brand, model], function(err) {
         if (err) {
             console.error("Add Device Error:", err.message);
             return res.status(500).json({ success: false, message: "บันทึกข้อมูลอุปกรณ์ไม่สำเร็จ" });
         }
-        res.json({ success: true, message: "เพิ่มอุปกรณ์สำเร็จ!", device_id: this.lastID });
+        res.json({ success: true, message: "เพิ่มข้อมูลอุปกรณ์ใหม่เรียบร้อยแล้ว!" });
     });
 });
 
@@ -141,19 +176,21 @@ app.get('/api/devices/:id', (req, res) => {
 // ==========================================
 app.put('/api/devices/:id', (req, res) => {
     const deviceId = req.params.id;
-    const { customer_id, brand, model, type } = req.body;
+    // 🌟 รับค่า device_type จากฟอร์มหน้าเว็บมาด้วย
+    const { customer_id, device_type, brand, model } = req.body;
 
-    const sql = `UPDATE Devices SET customer_id = ?, brand = ?, model = ?, type = ? WHERE device_id = ?`;
+    // 🌟 เติม device_type เข้าไปในคำสั่ง UPDATE
+    const sql = `UPDATE Devices SET customer_id = ?, device_type = ?, brand = ?, model = ? WHERE device_id = ?`;
     
-    db.run(sql, [customer_id, brand, model, type, deviceId], function(err) {
+    // 🌟 เรียงลำดับตัวแปรให้ตรงกับเครื่องหมาย ? ใน SQL
+    db.run(sql, [customer_id, device_type, brand, model, deviceId], function(err) {
         if (err) {
             console.error("Update Device Error:", err.message);
             return res.status(500).json({ success: false, message: "อัปเดตข้อมูลอุปกรณ์ไม่สำเร็จ" });
         }
-        res.json({ success: true, message: "แก้ไขข้อมูลอุปกรณ์เรียบร้อยแล้ว!" });
+        res.json({ success: true, message: "อัปเดตข้อมูลอุปกรณ์เรียบร้อยแล้ว!" });
     });
 });
-
 // ==========================================
 // 👥 API สำหรับดึงข้อมูลลูกค้าทั้งหมด
 // ==========================================
@@ -272,30 +309,32 @@ app.get('/api/technicians/:id', (req, res) => {
 // ✏️ API สำหรับอัปเดตข้อมูลช่างซ่อม (ใช้ PUT)
 // ==========================================
 app.put('/api/technicians/:id', (req, res) => {
-    const technicianId = req.params.id;
-    const { first_name, last_name, phone, email, specialty } = req.body;
+    const techId = req.params.id;
+    // 🌟 รับค่า hire_date มาจากหน้าเว็บ (แทน specialty)
+    const { first_name, last_name, phone, email, hire_date } = req.body;
 
-    const sql = `UPDATE Technicians SET first_name = ?, last_name = ?, phone = ?, email = ?, specialty = ? WHERE technician_id = ?`;
+    // 🌟 อัปเดตคำสั่ง SQL ให้บันทึก email และ hire_date
+    const sql = `UPDATE Technicians SET first_name = ?, last_name = ?, phone = ?, email = ?, hire_date = ? WHERE technician_id = ?`;
     
-    db.run(sql, [first_name, last_name, phone, email, specialty, technicianId], function(err) {
+    db.run(sql, [first_name, last_name, phone, email, hire_date, techId], function(err) {
         if (err) {
-            console.error("Update Technician Error:", err.message);
-            return res.status(500).json({ success: false, message: "อัปเดตข้อมูลช่างซ่อมไม่สำเร็จ" });
+            console.error("Update Tech Error:", err.message);
+            return res.status(500).json({ success: false, message: "อัปเดตข้อมูลช่างไม่สำเร็จ" });
         }
-        res.json({ success: true, message: "แก้ไขข้อมูลช่างซ่อมเรียบร้อยแล้ว!" });
+        res.json({ success: true, message: "อัปเดตข้อมูลช่างซ่อมเรียบร้อยแล้ว!" });
     });
 });
 
 // ==========================================
-// 🛠️ API สำหรับดึงข้อมูลงานซ่อมทั้งหมด
+// 📋 API ดึงข้อมูลงานซ่อมทั้งหมด (ใช้ในหน้ารายการ และ Dashboard)
 // ==========================================
 app.get('/api/repairs', (req, res) => {
-    // 🌟 อัปเดต SQL ใหม่ ให้ดึงคอลัมน์แยกกันตรงตามที่ Frontend ต้องการ
+    // 🌟 เติม c.phone เข้าไปในบรรทัด SELECT ครับ
     const sql = `
-        SELECT r.repair_id, r.receive_date, r.status,
+        SELECT r.repair_id, r.receive_date, r.problem_type, r.status, 
+               d.device_type, d.brand, d.model,
                c.first_name, c.last_name, c.phone,
-               d.brand, d.model,
-               t.first_name AS tech_name
+               t.first_name AS tech_first
         FROM Repairs r
         LEFT JOIN Devices d ON r.device_id = d.device_id
         LEFT JOIN Customers c ON d.customer_id = c.customer_id
@@ -305,10 +344,9 @@ app.get('/api/repairs', (req, res) => {
     
     db.all(sql, [], (err, rows) => {
         if (err) {
-            console.error("Database Error:", err.message);
-            return res.status(500).json({ success: false, message: "ดึงข้อมูลไม่สำเร็จ" });
+            console.error("Get All Repairs Error:", err.message);
+            return res.status(500).json({ success: false, message: "ฐานข้อมูลมีปัญหา" });
         }
-        // พ่นข้อมูลออกไปเป็น JSON
         res.json({ success: true, data: rows });
     });
 });
@@ -574,10 +612,32 @@ app.delete('/api/technicians/:id', (req, res) => {
 });
 
 // 4. ลบงานซ่อม
+// ==========================================
+// 🗑️ API ลบข้อมูลงานซ่อม (พร้อมลบรายการชำระเงินที่เกี่ยวข้อง)
+// ==========================================
 app.delete('/api/repairs/:id', (req, res) => {
-    db.run(`DELETE FROM Repairs WHERE repair_id = ?`, [req.params.id], function(err) {
-        if (err) return res.status(500).json({ success: false, message: "ลบงานซ่อมไม่สำเร็จ" });
-        res.json({ success: true, message: "ลบข้อมูลงานซ่อมเรียบร้อยแล้ว!" });
+    const repairId = req.params.id;
+
+    // จังหวะที่ 1: ลบบิลชำระเงิน (Payments) ที่ผูกกับงานซ่อมนี้ทิ้งก่อน
+    const sqlDeletePayment = `DELETE FROM Payments WHERE repair_id = ?`;
+    
+    db.run(sqlDeletePayment, [repairId], function(err) {
+        if (err) {
+            console.error("Delete Payment Error:", err.message);
+            return res.status(500).json({ success: false, message: "ระบบขัดข้อง ไม่สามารถลบบิลชำระเงินได้" });
+        }
+
+        // จังหวะที่ 2: เมื่อลบบิลเสร็จแล้ว ค่อยลบตัวงานซ่อม (Repairs)
+        const sqlDeleteRepair = `DELETE FROM Repairs WHERE repair_id = ?`;
+        
+        db.run(sqlDeleteRepair, [repairId], function(err) {
+            if (err) {
+                console.error("Delete Repair Error:", err.message);
+                return res.status(500).json({ success: false, message: "ระบบขัดข้อง ไม่สามารถลบงานซ่อมได้" });
+            }
+            
+            res.json({ success: true, message: "ลบงานซ่อมและบิลชำระเงินที่เกี่ยวข้องเรียบร้อยแล้ว!" });
+        });
     });
 });
 

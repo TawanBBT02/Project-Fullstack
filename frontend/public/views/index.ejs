@@ -2,73 +2,207 @@
 <%- include('partials/sidebar') %>
 
 <div class="container-fluid px-4 py-4">
-    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
-        <h2 class="fw-bold" style="color: var(--sidebar-bg);"><i class="bi bi-speedometer2"></i> ภาพรวมระบบ (Dashboard)</h2>
-        <div>
-            <span class="text-muted">ผู้ใช้งานปัจจุบัน: <span class="badge bg-primary px-3 py-2"><i class="bi bi-person-circle"></i> <%= user.email %></span></span>
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <h2 class="fw-bold text-dark mb-0">
+            <i class="bi bi-speedometer2 text-primary me-2"></i>ภาพรวมระบบ (Dashboard)
+        </h2>
+        <div class="text-muted">
+            <i class="bi bi-calendar3 me-1"></i> <span id="currentDate"></span>
         </div>
     </div>
 
     <div class="row g-4 mb-4">
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 border-start border-primary border-4 h-100 py-2">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white shadow-sm border-0 h-100 rounded-3">
                 <div class="card-body">
-                    <div class="text-xs fw-bold text-primary text-uppercase mb-1">งานซ่อมทั้งหมด (ระบบ)</div>
-                    <div class="h2 mb-0 fw-bold text-gray-800" id="totalRepairs">...</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1 fw-bold opacity-75">งานซ่อมทั้งหมด</p>
+                            <h2 class="mb-0 fw-bold" id="dash-totalRepairs">0</h2>
+                        </div>
+                        <i class="bi bi-tools fs-1 opacity-50"></i>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 border-start border-warning border-4 h-100 py-2">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-dark shadow-sm border-0 h-100 rounded-3">
                 <div class="card-body">
-                    <div class="text-xs fw-bold text-warning text-uppercase mb-1">รอดำเนินการ (Pending)</div>
-                    <div class="h2 mb-0 fw-bold text-gray-800" id="pendingRepairs">...</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1 fw-bold opacity-75">รอดำเนินการ / กำลังซ่อม</p>
+                            <h2 class="mb-0 fw-bold" id="dash-pendingRepairs">0</h2>
+                        </div>
+                        <i class="bi bi-hourglass-split fs-1 opacity-50"></i>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 border-start border-success border-4 h-100 py-2">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white shadow-sm border-0 h-100 rounded-3">
                 <div class="card-body">
-                    <div class="text-xs fw-bold text-success text-uppercase mb-1">ซ่อมเสร็จสิ้น (Completed)</div>
-                    <div class="h2 mb-0 fw-bold text-gray-800" id="completedRepairs">...</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1 fw-bold opacity-75">ซ่อมเสร็จสิ้น (เดือนนี้)</p>
+                            <h2 class="mb-0 fw-bold" id="dash-completedRepairs">0</h2>
+                        </div>
+                        <i class="bi bi-check-circle fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-dark shadow-sm border-0 h-100 rounded-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1 fw-bold opacity-75">ลูกค้าในระบบ</p>
+                            <h2 class="mb-0 fw-bold" id="dash-totalCustomers">0</h2>
+                        </div>
+                        <i class="bi bi-people fs-1 opacity-50"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card shadow-sm border-0 text-center py-5 mt-4" style="background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);">
-        <div class="card-body">
-            <i class="bi bi-rocket-takeoff text-primary" style="font-size: 4rem;"></i>
-            <h3 class="fw-bold mt-3">ระบบ ComRepair V2 พร้อมใช้งาน!</h3>
-            <p class="text-muted">ข้อมูลถูกแยกส่วนการทำงานเป็น Backend และ Frontend อย่างสมบูรณ์ ทำให้ระบบรวดเร็วและปลอดภัยมากยิ่งขึ้น</p>
-            <a href="/repairs" class="btn btn-primary rounded-pill px-4 py-2 mt-2">👉 ไปที่ตารางงานซ่อม</a>
+    <div class="row g-4">
+        
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>เมนูจัดการด่วน</h5>
+                </div>
+                <div class="card-body d-flex flex-column gap-3 p-4">
+                    <a href="/add_repair" class="btn btn-outline-primary btn-lg fw-bold text-start rounded-pill">
+                        <i class="bi bi-plus-circle me-2"></i> เปิดบิลรับซ่อมใหม่
+                    </a>
+                    <a href="/add_customer" class="btn btn-outline-success btn-lg fw-bold text-start rounded-pill">
+                        <i class="bi bi-person-plus me-2"></i> เพิ่มลูกค้าใหม่
+                    </a>
+                    <a href="/repairs" class="btn btn-outline-secondary btn-lg fw-bold text-start rounded-pill">
+                        <i class="bi bi-list-task me-2"></i> ดูรายการงานซ่อมทั้งหมด
+                    </a>
+                </div>
+            </div>
         </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-exclamation-circle-fill text-danger me-2"></i>งานซ่อมที่ค้างอยู่ (ล่าสุด)</h5>
+                    <a href="/repairs" class="btn btn-sm btn-light border rounded-pill">ดูทั้งหมด</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">รหัสงาน</th>
+                                    <th>อาการเสีย</th>
+                                    <th>สถานะ</th>
+                                    <th class="text-end pe-4">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentRepairsBody">
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">กำลังโหลดข้อมูล...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
+<%- include('partials/footer') %>
+
 <script>
-    async function loadDashboardStats() {
+    // 🌟 แสดงวันที่ปัจจุบัน
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('currentDate').innerText = new Date().toLocaleDateString('th-TH', options);
+
+    async function loadDashboardData() {
         try {
-            const response = await axios.get('http://localhost:5000/api/dashboard');
-            const stats = response.data.data;
+            // โหลดข้อมูลทั้งหมดมาคำนวณที่หน้าบ้านพร้อมกันทีเดียว
+            const [repairsRes, customersRes] = await Promise.all([
+                axios.get('http://localhost:5000/api/repairs'),
+                axios.get('http://localhost:5000/api/customers')
+            ]);
+
+            const repairs = repairsRes.data.data;
+            const customers = customersRes.data.data;
+
+            // 1. คำนวณตัวเลขกล่องสถิติ
+            const totalRepairs = repairs.length;
+            const pendingRepairs = repairs.filter(r => r.status === 'Pending' || r.status === 'In Progress').length;
+            const completedRepairs = repairs.filter(r => r.status === 'Completed').length;
+            const totalCustomers = customers.length;
+
+            // แอนิเมชันตัวเลขวิ่ง (ลูกเล่นเสริมความเท่)
+            animateValue("dash-totalRepairs", 0, totalRepairs, 1000);
+            animateValue("dash-pendingRepairs", 0, pendingRepairs, 1000);
+            animateValue("dash-completedRepairs", 0, completedRepairs, 1000);
+            animateValue("dash-totalCustomers", 0, totalCustomers, 1000);
+
+            // 2. ดึงงานซ่อมที่ "ยังไม่เสร็จ" 5 งานล่าสุดมาโชว์ในตาราง
+            const unfinishedRepairs = repairs.filter(r => r.status !== 'Completed').slice(0, 5); // เอาแค่ 5 งานแรก
             
-            // นำตัวเลขที่ได้มาหยอดใส่กล่อง (ถ้าไม่มีค่า ให้โชว์เลข 0)
-            document.getElementById('totalRepairs').innerText = stats.totalRepairs || 0;
-            document.getElementById('pendingRepairs').innerText = stats.pendingRepairs || 0;
-            document.getElementById('completedRepairs').innerText = stats.completedRepairs || 0;
-            
+            let html = '';
+            if (unfinishedRepairs.length === 0) {
+                html = `<tr><td colspan="4" class="text-center py-4 text-success"><i class="bi bi-emoji-smile fs-4 d-block mb-2"></i>ไม่มีงานค้าง เยี่ยมมาก!</td></tr>`;
+            } else {
+                unfinishedRepairs.forEach(r => {
+                    const repId = String(r.repair_id).padStart(3, '0');
+                    
+                    let statusBadge = '';
+                    if(r.status === 'Pending') statusBadge = '<span class="badge bg-warning text-dark rounded-pill px-3">รอดำเนินการ</span>';
+                    else if(r.status === 'In Progress') statusBadge = '<span class="badge bg-primary rounded-pill px-3">กำลังซ่อม</span>';
+                    else statusBadge = `<span class="badge bg-secondary rounded-pill px-3">${r.status}</span>`;
+
+                    html += `
+                        <tr>
+                            <td class="ps-4 fw-bold text-muted">REP-${repId}</td>
+                            <td class="text-truncate" style="max-width: 200px;">${r.problem_type || r.description || 'ไม่ระบุอาการเสีย'}</td>  
+                            <td>${statusBadge}</td>
+                            <td class="text-end pe-4">
+                                <a href="/repair-details/${r.repair_id}" class="btn btn-sm btn-outline-info rounded-pill">รายละเอียด</a>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            document.getElementById('recentRepairsBody').innerHTML = html;
+
         } catch (error) {
-            console.error("ดึงข้อมูล Dashboard พลาด:", error);
-            // ถ้า Error ให้โชว์เครื่องหมายขีดค้างไว้
-            document.getElementById('totalRepairs').innerText = '-';
-            document.getElementById('pendingRepairs').innerText = '-';
-            document.getElementById('completedRepairs').innerText = '-';
+            console.error("Dashboard Load Error:", error);
+            document.getElementById('recentRepairsBody').innerHTML = `<tr><td colspan="4" class="text-center py-4 text-danger">ไม่สามารถเชื่อมต่อฐานข้อมูลได้</td></tr>`;
         }
     }
 
-    // สั่งให้โหลดตัวเลขทันทีที่เปิดหน้าเว็บ
-    loadDashboardStats();
-</script>
+    // ฟังก์ชันลูกเล่นตัวเลขวิ่ง (Counter Animation)
+    function animateValue(id, start, end, duration) {
+        if (start === end) {
+            document.getElementById(id).innerHTML = end;
+            return;
+        }
+        let range = end - start;
+        let current = start;
+        let increment = end > start ? 1 : -1;
+        let stepTime = Math.abs(Math.floor(duration / range));
+        let obj = document.getElementById(id);
+        let timer = setInterval(function() {
+            current += increment;
+            obj.innerHTML = current;
+            if (current == end) {
+                clearInterval(timer);
+            }
+        }, stepTime);
+    }
 
-</body>
-</html>
+    // สั่งรันเมื่อเปิดหน้า
+    loadDashboardData();
+</script>

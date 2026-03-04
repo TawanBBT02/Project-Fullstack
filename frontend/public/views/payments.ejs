@@ -96,9 +96,9 @@
                             <td class="text-center">${statusBadge}</td>
                             <td class="text-end pe-4">
                                 <div class="btn-group shadow-sm">
-                                    <button class="btn btn-sm btn-light text-primary border" title="พิมพ์ใบเสร็จ" onclick="window.print()">
+                                    <a href="/repair-details/${p.repair_id}" class="btn btn-sm btn-light text-primary border shadow-sm" title="ไปหน้าพิมพ์ใบเสร็จ">
                                         <i class="bi bi-printer-fill"></i>
-                                    </button>
+                                    </a>
                                     <button type="button" class="btn btn-sm btn-light text-danger border" title="ลบ" onclick="deletePayment(${p.payment_id})">
                                         <i class="bi bi-trash3-fill"></i>
                                     </button>
